@@ -7,7 +7,7 @@
         </a>
       </li>
       <li class="pc-content">
-        <a href="{{ url('mypage') }}" data-toggle="tooltip" title="マイページ">
+        <a href="{{ url('mypage') }}" data-toggle="tooltip" {% if is_granted('ROLE_USER') %} title="マイページ" {% else %} title="ログイン" {% endif %}>
           {# <img src="{{ asset('assets/img/picto-02.png') }}" alt="" width=23> #}
           <i class="fas fa-user fa-fw" style="font-size: 20px;"></i>
         </a>
@@ -22,6 +22,12 @@
         <a href="/cart" data-toggle="tooltip" title="カート" id="cartBtn">
           {# <img src="{{ asset('assets/img/picto-04.png') }}" alt="" width=23> #}
           <i class="fas fa-shopping-cart fa-fw" style="font-size: 20px;"></i>
+          {% if is_granted('ROLE_USER') %}
+            {% set Carts = get_all_carts() %}
+            {% if Carts is defined and Carts|length > 0 %}
+              <span class="cart-badge">{{Carts|length}}</span>
+            {% endif %}
+          {% endif %}
         </a>
       </li>
       {% if is_granted('ROLE_USER') %}

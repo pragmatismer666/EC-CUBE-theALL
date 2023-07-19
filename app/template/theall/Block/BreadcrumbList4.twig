@@ -169,7 +169,14 @@ file that was distributed with this source code.
         </li>
 
         {% set position = position + 1 %}
-
+        {% if cur_path starts with '/list' %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="javascript:void(0)">
+                    <span itemprop="name">{{ "全て"|trans }}</span>
+                </a>
+                <meta itemprop="position" content="{{ position }}">
+            </li>
+        {% endif %}
         {% if cur_path starts with '/detail' %}
             <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
                 <a itemprop="item" href="javascript:void(0)">
