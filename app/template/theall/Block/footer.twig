@@ -18,4 +18,14 @@ file that was distributed with this source code.
 <li><a href="{{ url('contact') }}">お問い合わせ</a></li>
 </ul>
 <div class="logo">THE ALL</div>
-<div class="copy">©︎ 2021-20XX THE ALL</div>
+<div class="copy">©︎ 2021-<span id="to_year"></span> THE ALL</div>
+{% block javascripts %}
+    <script>
+        // JavaScript code goes here
+        document.addEventListener("DOMContentLoaded", function() {
+            var toYear = document.getElementById("to_year");
+            const currentYear = new Date().getFullYear();
+            toYear.innerHTML = ""+currentYear;
+        });
+    </script>
+{% endblock %}
