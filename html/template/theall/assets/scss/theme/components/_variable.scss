@@ -1,0 +1,27 @@
+/// Regular font family
+/// @type List
+$text-font-stack:"Yu Gothic Medium", "游ゴシック Medium", YuGothic, "游ゴシック体", "ヒラギノ角ゴ Pro W3", "メイリオ", sans-serif!default;
+
+/// Copy text color
+/// @type Color
+$text-color: #141414 !default;
+$accent-color: #CB1569 !default;
+
+/// Container's maximum width
+/// @type Length
+$max-width: 1150px !default; //(1090px)
+
+/// Container's maximum width narrow
+/// @type Length
+// $inner-max-width: 1139px !default;
+// $narrow-max-width: 1024px !default;
+
+/// Breakpoints map
+/// @prop {String} keys - Keys are identifiers mapped to a given length
+/// @prop {Map} values - Values are actual breakpoints expressed in pixels
+$breakpoints: (
+  'small': 575.98px,
+  'medium': 767.98px,
+  'large' : 991.98px,
+  'maximum': 1150px,
+) !default;

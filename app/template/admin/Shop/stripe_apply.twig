@@ -1,0 +1,37 @@
+{% extends '@admin/default_frame.twig' %}
+
+{% set menus = ['mshop', 'apply_list'] %}
+
+{% block title %}{{ 'malldevel.admin.shop.label'|trans }}{% endblock %}
+
+{% block sub_title %}{{ 'malldevel.admin.apply.stripe_apply'|trans }}{% endblock %}
+
+{% block stylesheet %}
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+<style>
+.stripe-apply-button {
+    color: #fff;
+    background: #635bff;
+    font-size: 25px;
+}
+.stripe-apply-button-wrapper {
+    display: flex;
+    justify-content: center;
+}
+</style>
+{% endblock %}
+
+{% block javascript %}
+    <script src="{{ asset('assets/js/vendor/fileupload/vendor/jquery.ui.widget.js', 'admin') }}"></script>
+    <script src="{{ asset('assets/js/vendor/fileupload/jquery.iframe-transport.js', 'admin') }}"></script>
+{% endblock %}
+
+{% block main %}
+<div class="c-contentsArea__cols">
+    <div class="c-contentsArea_primaryCol">
+        <div class="stripe-apply-button-wrapper">
+            <button class="btn px-5 stripe-apply-button" onclick="location.href='{{ url('malldevel_applicant_stripe_apply_request')}}'">{{ 'malldevel.admin.apply.stripe_apply'|trans }}</button>
+        </div>
+    </div>        
+</div>
+{% endblock %}

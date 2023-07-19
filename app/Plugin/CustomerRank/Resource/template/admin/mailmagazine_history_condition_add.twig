@@ -1,0 +1,34 @@
+{#
+* Plugin Name : CustomerRank
+*
+* Copyright (C) BraTech Co., Ltd. All Rights Reserved.
+* http://www.bratech.co.jp/
+*
+* For the full copyright and license information, please view the LICENSE
+* file that was distributed with this source code.
+#}
+
+<table style="display:none;">
+<tbody id="customerrank">
+    <tr>
+        <th class="w-25">{{ 'customerrank.common.rank'|trans }}</th>
+        <td>
+            {% if search_data.customer_rank is defined %}
+                {% if search_data.customer_rank is null %}
+                    ({{ 'mailmagazine.history.condition.label_null'|trans }})
+                {% else %}
+                    {{ search_data.customer_rank }}
+                {% endif %}
+            {% endif %}
+        </td>
+    </tr>
+</tbody>
+</table>
+
+<script>
+    $(function() {
+        $elem = $('#customerrank');
+        $('tbody:eq(0)').append($elem.html());
+        $elem.remove();
+    });
+</script>

@@ -1,0 +1,163 @@
+{% extends 'default_frame.twig' %}
+
+{% set body_class = 'registration_page' %}
+{% form_theme form 'Form/form_div_layout.twig' %}
+
+{% block main %}
+    <div class="ec-registerRole">
+        <div class="ec-pageHeader">
+            <h1>{{ '新規登録ショップ申請'|trans }}</h1>
+        </div>
+        <div class="ec-off1Grid">
+            <div class="ec-off1Grid__cell">
+                <form method="post" action="" novalidate class="h-adr">
+                    <span class="p-country-name" style="display:none;">Japan</span>
+                    {{ form_widget(form._token) }}
+                    <div class="ec-borderedDefs">
+                        <dl>
+                            <dt>
+                                {{ form_label(form.name, 'お名前', { 'label_attr': { 'class': 'ec-label' }}) }}
+                            </dt>
+                            <dd>
+                                {{ form.name.vars.data }}
+                                {{ form_widget(form.name, { type: 'hidden' }) }}
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>
+                                {{ form_label(form.shop_name_kana, 'ショップ名称(カナ)', { 'label_attr': { 'class': 'ec-label' }}) }}
+                            </dt>
+                            <dd>
+                                {{ form.shop_name_kana.vars.data }}
+                                {{ form_widget(form.shop_name_kana, { type: 'hidden' }) }}
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>
+                                {{ form_label(form.shop_name, 'ショップ名称', { 'label_attr': { 'class': 'ec-label' }}) }}
+                            </dt>
+                            <dd>
+                                {{ form.shop_name.vars.data }}
+                                {{ form_widget(form.shop_name, { type: 'hidden' }) }}
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>
+                                {{ form_label(form.login_id, 'ログインID ', { 'label_attr': { 'class': 'ec-label' }}) }}
+                            </dt>
+                            <dd>
+                                <div class="ec-input{{ has_errors(form.login_id) ? ' error' }}">
+                                    {{ form.login_id.vars.data }}
+                                    {{ form_widget(form.login_id, { type: 'hidden' }) }}
+                                </div>
+                            </dd>
+                        </dl>
+                        
+                        <dl>
+                            <dt>
+                                {{ form_label(form.phone_number, '電話番号 ', { 'label_attr': { 'class': 'ec-label' }}) }}
+                            </dt>
+                            <dd>
+                                <div class="ec-input{{ has_errors(form.phone_number) ? ' error' }}">
+                                    {{ form.phone_number.vars.data }}
+                                    {{ form_widget(form.phone_number, { type: 'hidden' }) }}
+                                </div>
+                            </dd>
+                        </dl>
+                        
+                        <dl>
+                            <dt>
+                                {{ form_label(form.order_mail, '連絡帳メールアドレス', { 'label_attr': { 'class': 'ec-label' }}) }}
+                            </dt>
+                            <dd>
+                                {{ form.order_mail.vars.data }}
+                                {{ form_widget(form.order_mail, { type: 'hidden' }) }}
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>
+                                {{ form_label(form.company_name, '会社名', { 'label_attr': { 'class': 'ec-label' }}) }}
+                            </dt>
+                            <dd>
+                                {{ form.company_name.vars.data }}
+                                {{ form_widget(form.company_name, { type: 'hidden' }) }}
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>
+                                {{ form_label(form.address, '住所', { 'label_attr': { 'class': 'ec-label' }}) }}
+                            </dt>
+                            <dd>
+                                <span>〒</span>{{ form.postal_code.vars.data }}
+                                    {{ form_widget(form.postal_code, { type: 'hidden' } ) }}
+                                    {{ form.address.pref.vars.data }} {{ form.address.addr01.vars.data }} {{form.address.addr02.vars.data }}
+                                    {{ form_widget(form.address.pref, { type: 'hidden' }) }}
+                                    {{ form_widget(form.address.addr01, { type: 'hidden' } ) }}
+                                    {{ form_widget(form.address.addr02, { type: 'hidden' } ) }}
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>
+                                {{ form_label(form.representative, '代表者', { 'label_attr': { 'class': 'ec-label' }}) }}
+                            </dt>
+                            <dd>
+                                {{ form.representative.vars.data }}
+                                {{ form_widget(form.representative, { type: 'hidden' }) }}
+                            </dd>
+                        </dl>
+                        
+                        <dl>
+                            <dt>
+                                {{ form_label(form.founded_at, '設立', { 'label_attr': {'class': 'ec-label' }}) }}
+                            </dt>
+                            <dd>
+                                {{ form.founded_at.vars.data }}
+                                {{ form_widget(form.founded_at, { type: 'hidden' }) }}
+                            </dd>
+                            {{ form_widget(form.user_policy_check, { type: 'hidden'}) }}
+                        </dl>
+                        <dl>
+                            <dt>
+                                {{ form_label(form.exp_online_shop, 'ネットショップ経験有無', { 'label_attr': { 'class': 'ec-label' }}) }}
+                            </dt>
+                            <dd>
+                                {{ form.exp_online_shop.vars.data == 0 ? "無" : "有" }}
+                                {{ form_widget(form.exp_online_shop, { type: 'hidden' }) }}
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>
+                                {{ form_label(form.open_schedule, '出店予定時期', { 'label_attr': { 'class': 'ec-label' }}) }}
+                            </dt>
+                            <dd>
+                                {% if form.open_schedule.vars.data %}
+                                    {{ form.open_schedule.vars.data|date('Y-m-d') }}
+                                    {{ form_widget(form.open_schedule.year, { type: 'hidden' }) }}
+                                    {{ form_widget(form.open_schedule.month, { type: 'hidden' }) }}
+                                    {{ form_widget(form.open_schedule.day, { type: 'hidden' }) }}
+                                {% endif %}
+                            </dd>
+                        </dl>
+                        <dl>
+                            <dt>
+                                {{ form_label(form.inquiry_content, '問い合わせ内容', { 'label_attr': { 'class': 'ec-label' }}) }}
+                            </dt>
+                            <dd>
+                                {{ form.inquiry_content.vars.data }}
+                                {{ form_widget(form.inquiry_content, { type: 'hidden' }) }}
+                            </dd>
+                        </dl>
+                    </div>
+                    <div class="ec-registerRole__actions">
+                        <div class="ec-off4Grid">
+                            <div class="ec-off4Grid__cell">
+                                <button class="ec-blockBtn--action" type="submit" name="mode" value="complete">{{ '会員登録をする'|trans }}</button>
+                                <button class="ec-blockBtn--cancel" name="mode" type="submit" value="back">{{ '戻る'|trans }}</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

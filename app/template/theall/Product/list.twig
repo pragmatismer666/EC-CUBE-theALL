@@ -1,0 +1,218 @@
+{#
+This file is part of EC-CUBE
+
+Copyright(c) EC-CUBE CO.,LTD. All Rights Reserved.
+
+http://www.ec-cube.co.jp/
+
+For the full copyright and license information, please view the LICENSE
+file that was distributed with this source code.
+#}
+{% extends 'default_frame.twig' %}
+
+{% set body_class = 'product_page' %}
+
+{% block javascript %}
+    <script>
+        eccube.productsClassCategories = {
+            {% for Product in pagination %}
+            "{{ Product.id|escape('js') }}": {{ class_categories_as_json(Product)|raw }}{% if loop.last == false %}, {% endif %}
+            {% endfor %}
+        };
+
+        $(function() {
+
+            // 表示件数を変更
+            $('.disp-number').change(function() {
+                var dispNumber = $(this).val();
+                $('#disp_number').val(dispNumber);
+                $('#pageno').val(1);
+                $("#form1").submit();
+            });
+
+            // 並び順を変更
+            $('.order-by').change(function() {
+                var orderBy = $(this).val();
+                $('#orderby').val(orderBy);
+                $('#pageno').val(1);
+                $("#form1").submit();
+            });
+
+            const breadcrumbs = `
+                <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    {% if Category is not empty %}
+                    <a itemprop="item" href="{{ url('product_list', {category_id: Category.id}) }}">
+                        <span itemprop="name">{{ Category.name }}</span>
+                    </a>
+                    {% else %}
+                    <a itemprop="item" href="javascript: void(0);">
+                        <span itemprop="name">{{ 'malldevel.product.list'|trans }}</span>
+                    </a>
+                    {% endif %}
+                    <meta itemprop="position" content="2">
+                </li>
+            `;
+            $(".breadcrumb").append(breadcrumbs);
+        });
+    </script>
+{% endblock %}
+
+{% block stylesheet %}
+    <style>
+        .ec-shelfGrid .ec-shelfGrid__item {
+            margin-right: 0;
+        }
+        .ec-shelfGrid__item .img img {
+            width: 100%;
+            object-fit: cover;
+            height: 140px;
+        }
+        @media only screen and (max-width: 992px) {
+            .ec-shelfGrid__item .img img {
+                height: 80px;
+            }
+        }
+        @media only screen and (max-width: 768px) {
+            .ec-shelfGrid__item .img img {
+                height: calc(25vw - 10px);
+            }
+        }
+        @media only screen and (min-width: 768px) {
+            .ec-shelfGrid .ec-shelfGrid__item {
+                width: 33.33%;
+            }
+
+        }
+        .ec-topicpath__divider {
+            margin-bottom: 0!important;
+        }
+        .ec-topicpath__item--active {
+            margin-bottom: 0!important;
+        }
+        .ec-topicpath__item > a, .ec-topicpath__item--active > a {
+            color: #333333!important;
+        }
+    </style>
+{% endblock %}
+
+{% block title %}
+{% if Category is not empty %}
+<section class="page-productlist__head pc-content">
+    <div class="productlist-title">
+    <div class="img">
+        <img src="{% if Category.thumbnail is not empty %}{{ asset('admin/' ~ Category.thumbnail, 'save_image') }}{% else %}{{ asset(''|no_image_product, 'save_image') }}{% endif %}"
+            alt="{{ Category.name }}"
+            class="category-thumbnail"
+        >
+    </div>
+    <div class="text">
+        <h1>{{ Category.name }}</h1>
+    </div>
+    </div>
+</section>
+{% elseif Series is not empty %}
+<section class="page-productlist__head pc-content">
+    <div class="productlist-title">
+    <div class="img">
+        <img src="{% if Series.thumbnail is not empty %}{{ asset('admin/' ~ Series.thumbnail, 'save_image') }}{% else %}{{ asset(''|no_image_product, 'save_image') }}{% endif %}"
+            alt="{{ Series.name }}"
+            class="category-thumbnail"
+        >
+    </div>
+    <div class="text">
+        <h1>{{ Series.name }}</h1>
+    </div>
+    </div>
+</section>
+{% endif %}
+
+{% endblock %}
+{% block main %}
+<section class="new-item">
+    {% if search_form.category_id.vars.errors|length > 0 %}
+        <div class="ec-searchnavRole">
+            <p class="errormsg text-danger">{{ 'ご指定のカテゴリは存在しません'|trans }}</p>
+        </div>
+    {% else %}
+        <div class="ec-searchnavRole">
+            <form name="form1" id="form1" method="get" action="?">
+                {% for item in search_form %}
+                    <input type="hidden" id="{{ item.vars.id }}"
+                           name="{{ item.vars.full_name }}"
+                           {% if item.vars.value is not empty %}value="{{ item.vars.value }}" {% endif %}/>
+                {% endfor %}
+            </form>
+            
+            <div class="ec-searchnavRole__topicpath">
+                <ol class="ec-topicpath">
+                    <li class="ec-topicpath__item"><a href="{{ url('product_list') }}">{{ '全て'|trans }}</a>
+                    </li>
+                    {% if Category is not null %}
+                        {% for Path in Category.path %}
+                            <li class="ec-topicpath__divider">|</li>
+                            <li class="ec-topicpath__item{% if loop.last %}--active{% endif %}"><a
+                                        href="{{ url('product_list') }}?category_id={{ Path.id }}">{{ Path.name }}</a>
+                            </li>
+                        {% endfor %}
+                    {% elseif Series is not null %}
+                        <li class="ec-topicpath__divider">|</li>
+                        <li class="ec-topicpath__item--active">
+                            <a href="{{ url('product_list') }}?series_id={{ Series.id }}">{{ Series.name }}</a>
+                        </li>
+                    {% endif %}
+                    {% if search_form.vars.value and search_form.vars.value.name %}
+                        <li class="ec-topicpath__divider">|</li>
+                        <li class="ec-topicpath__item">{{ '「%name%」の検索結果'|trans({ '%name%': search_form.vars.value.name }) }}</li>
+                    {% endif %}
+                </ol>
+            </div>
+            <div class="ec-searchnavRole__infos">
+                <div class="ec-searchnavRole__counter">
+                    {% if pagination.totalItemCount > 0 %}
+                        {{ '<span class="ec-font-bold">%count%件</span><span>の商品が見つかりました</span>'|trans({ '%count%': pagination.totalItemCount })|raw }}
+                    {% else %}
+                        <span>{{ 'お探しの商品は見つかりませんでした'|trans }}</span>
+                    {% endif %}
+                </div>
+                {% if pagination.totalItemCount > 0 %}
+                    <div class="ec-searchnavRole__actions">
+                        <div class="ec-select">
+                            {{ form_widget(disp_number_form, {'id': '', 'attr': {'class': 'disp-number'}}) }}
+                            {{ form_widget(order_by_form, {'id': '', 'attr': {'class': 'order-by'}}) }}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% if pagination.totalItemCount > 0 %}
+            <div class="ec-shelfRole">
+                <ul class="ec-shelfGrid item-list">
+                    {% for Product in pagination %}
+                        <li class="ec-shelfGrid__item item-list__item">
+                            <a href="{{ url('product_detail', {'id': Product.id}) }}">
+                                <div class="img"><img src="{{ asset(Product.main_list_image|no_image_product, 'save_image') }}"></div>
+                                <h4 class="title">{{ Product.Shop.name|default(Product.name) }}</h4>
+                                <p>{{ Product.name }}</p>
+                                <p class="price02-default price">
+                                    {% if Product.hasProductClass %}
+                                        {% if Product.getPrice02Min == Product.getPrice02Max %}
+                                            {{ Product.getPrice02IncTaxMin|price }}（税込み）
+                                        {% else %}
+                                            {{ Product.getPrice02IncTaxMin|price }} ～ {{ Product.getPrice02IncTaxMax|price }}（税込み）
+                                        {% endif %}
+                                    {% else %}
+                                        {{ Product.getPrice02IncTaxMin|price }}（税込み）
+                                    {% endif %}
+                                </p>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="ec-pagerRole">
+                {% include "pager.twig" with {'pages': pagination.paginationData} %}
+            </div>
+        {% endif %}
+    {% endif %}
+</section>
+{% endblock %}

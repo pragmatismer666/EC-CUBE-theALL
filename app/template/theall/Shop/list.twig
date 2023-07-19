@@ -1,0 +1,125 @@
+{% extends 'default_frame.twig' %}
+{% set page_name = 'shoplist' %}
+{% set Categories = repository('Eccube\\Entity\\Category').getList() %}
+{% block stylesheet %}
+    <style>
+        .btn-kata {
+            margin-top: 10px;
+        }
+        .btn-kata.selected{
+            background: #000;
+            color: #fff;
+        }
+        .shoplist-page__cont__category .btn-cat.active {
+            background: #707070
+        }
+    </style>
+{% endblock %}
+{% block main %}
+
+<h1>ショップ一覧</h1>
+<div class="shoplist-page__cont__category__spacer">
+    <ul class="shoplist-page__cont__category">
+    {% for Category in Categories %}
+        <li><a href="#section_{{ Category.id }}" class="w-100 btn-cat" data-id="{{ Category.id }}">
+            {{ Category.name }}
+        </a></li>
+    {% endfor %}
+    </ul>
+</div>
+<div class="shoplist-page__cont__nameorder__spacer">
+    <ul class="shoplist-page__cont__nameorder">
+        <li><a href="#" class="btn-kata  active" data-id="1">ア</a></li>
+        <li><a href="#" class="btn-kata" data-id="2">カ</a></li>
+        <li><a href="#" class="btn-kata" data-id="3">サ</a></li>
+        <li><a href="#" class="btn-kata" data-id="4">タ</a></li>
+        <li><a href="#" class="btn-kata" data-id="5">ナ</a></li>
+        <li><a href="#" class="btn-kata" data-id="6">ハ</a></li>
+        <li><a href="#" class="btn-kata" data-id="7">マ</a></li>
+        <li><a href="#" class="btn-kata" data-id="8">ヤ</a></li>
+        <li><a href="#" class="btn-kata" data-id="9">ラ・ワ</a></li>
+        <li><a href="#" class="btn-kata" data-id="10">A～Z・数字</a></li>
+    </ul>
+</div>
+<div class="shoplist-page__cont__itemwrap">
+
+    {% set ShopRepository = repository('Customize\\Entity\\Shop') %}
+    {% set Katas = repository('Customize\\Entity\\Katakana').findAll() %}
+    {% for Category in Categories %}
+        {% for Kata in Katas %}
+            {% set Shops = ShopRepository.getByCategoryAndKata(Category, Kata) %}
+            {% if Shops|length > 0 %}
+                <div class="category-section category-section_{{ Category.id }}" id="section_{{ Category.id }}_{{ Kata.id }}">
+                    <div class="shoplist-page__cont__itemwrap__item">
+                        <h2>{{ Category.name }}（{{ Kata.character }}）</h2>
+                        <ul>
+                        {% for Shop in Shops %}
+                            <li><a href="{{ url('malldevel_front_shop_detail', {'id': Shop.id}) }}">{{ Shop.Name }}</a></li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+</div>
+<script>
+    jQuery(function() {
+
+        var catNavSpacer = $('.shoplist-page__cont__category__spacer')
+        var catNav = $('.shoplist-page__cont__category')
+        var catNavHeight = catNav.outerHeight()
+
+        var nameOrderSpacer = $('.shoplist-page__cont__nameorder__spacer')
+        var nameOrder = $('.shoplist-page__cont__nameorder')
+        var nameOrderHeight = nameOrder.outerHeight()
+
+        var kata = 1;
+        var cat_id = {% if Categories|length > 0 %} "{{ Categories[0].id }}" {% else %} "" {% endif %}
+
+        $(".btn-kata").on('click', function(e) {
+            e.preventDefault();
+            $(".btn-kata").removeClass("active");
+            $(this).addClass("active");
+            kata = $(this).data("id");
+            var hash = "#section_" + cat_id + "_" + kata;
+            scroll(hash)
+        })
+        $(".btn-cat").on('click', function(e) {
+            e.preventDefault();
+            $(".btn-cat").removeClass("active")
+            $(this).addClass("active")
+            cat_id = $(this).data("id");
+            var hash = "#section_" + cat_id + "_" + kata;
+            var targetSectionExist = $("#section_" + cat_id + "_" + kata).length;
+            if (targetSectionExist) {
+                scroll(hash);
+            } else {
+                var targets = $(`.category-section_${cat_id}`);
+                if (targets.length) {
+                    scroll('#' + targets[0].id);
+                }
+            }
+        })
+        var scroll = function(hash) {
+            if($(hash).length) {
+                $('html, body').animate({
+                    scrollTop: $(hash).offset().top - catNavHeight - nameOrderHeight
+                }, 500);
+
+            }
+        }
+        var firstCat = $(".btn-cat")[0];
+        if (firstCat) {
+            $(firstCat).addClass('active');
+        }
+        {# var firstCat = $(".btn-cat")[0];
+        if (firstCat) {
+            firstCat.click();
+        } #}
+
+        
+    })
+  </script>
+  
+{% endblock %}

@@ -1,0 +1,378 @@
+<!doctype html>
+{#
+This file is part of EC-CUBE
+
+Copyright(c) EC-CUBE CO.,LTD. All Rights Reserved.
+
+http://www.ec-cube.co.jp/
+
+For the full copyright and license information, please view the LICENSE
+file that was distributed with this source code.
+#}
+<html lang="{{ eccube_config.locale }}">
+<head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# product: http://ogp.me/ns/product#">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="eccube-csrf-token" content="{{ csrf_token(constant('Eccube\\Common\\Constant::TOKEN_NAME')) }}">
+    <title>{{ BaseInfo.shop_name }}{% if subtitle is defined and subtitle is not empty %} / {{ subtitle }}{% elseif title is defined and title is not empty %} / {{ title }}{% endif %}</title>
+    {% if Page.author is not empty %}
+        <meta name="author" content="{{ Page.author }}">
+    {% endif %}
+    {% if Page.description is not empty %}
+        <meta name="description" content="{{ Page.description }}">
+    {% endif %}
+    {% if Page.keyword is not empty %}
+        <meta name="keywords" content="{{ Page.keyword }}">
+    {% endif %}
+    {% if Page.meta_robots is not empty %}
+        <meta name="robots" content="{{ Page.meta_robots }}">
+    {% endif %}
+    {% if Page.meta_tags is not empty %}
+        {{ include(template_from_string(Page.meta_tags)) }}
+    {% endif %}
+    <link rel="icon" href="{{ asset('assets/img/common/theall_favicon.png', 'user_data') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/jquery.slick/1.6.0/slick.css">
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+<style>
+    .carPopup{
+        display: none;
+        position: absolute;
+        padding: 15px;
+        background: #fff;
+        box-sizing: border-box;
+        box-shadow: 0px 0px 10px 0px rgb(0 0 0 / 20%);
+        width: 400px;
+    }
+
+    .carPopup .ec-cartNaviIsset__cart{
+        display: flex;
+        align-items: flex-start;
+        padding: 20px 0;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .ec-cartNaviIsset__cartImage{
+        width: 80px;
+    }
+
+    .ec-cartNaviIsset__cartContent{
+        width: calc(100% - 80px);
+        padding-left: 20px;
+        font-size: 1.4rem;
+    }
+
+    .ec-cartNaviIsset__cartContentPrice{
+        display: flex;
+        font-weight: bold;
+        align-items: center;
+    }
+
+    .ec-cartNaviIsset__cartContentTax{
+        font-size: 1.2rem;
+        margin-left: 5px;
+    }
+
+    @media only screen and (max-width: 600px) {
+        .carPopup{
+            width: 100%;
+        }
+    }
+
+
+    .searchPopup{
+        display: none;
+    }
+    .searchPopup{
+        display: none;
+        position: absolute;
+        padding: 15px;
+        background: #fff;
+        box-sizing: border-box;
+        box-shadow: 0px 0px 10px 0px rgb(0 0 0 / 20%);
+        width: 400px;
+    }
+     @media only screen and (max-width: 600px) {
+        .searchPopup{
+            width: 100%;
+        }
+    }
+
+
+    </style>
+    {% block stylesheet %}{% endblock %}
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script>
+        $(function() {
+            $.ajaxSetup({
+                'headers': {
+                    'ECCUBE-CSRF-TOKEN': $('meta[name="eccube-csrf-token"]').attr('content')
+                }
+            });
+        });
+    </script>
+    {# Layout: HEAD #}
+    {% if Layout.Head %}
+        {{ include('block.twig', {'Blocks': Layout.Head}) }}
+    {% endif %}
+    {# プラグイン用styleseetやmetatagなど #}
+    {% if plugin_assets is defined %}{{ include('@admin/snippet.twig', { snippets: plugin_assets }) }}{% endif %}
+    <link rel="stylesheet" href="{{ asset('assets/css/customize.css', 'user_data') }}">
+</head>
+<body id="page_{{ app.request.get('_route') }}" class="page-{{ app.request.get('_route') }} {{ body_class|default('default_page') }} {% if Page.url != 'homepage' %}single-page{% endif %}">
+{# Layout: BODY_AFTER #}
+{% if Layout.BodyAfter %}
+    {{ include('block.twig', {'Blocks': Layout.BodyAfter}) }}
+{% endif %}
+
+<div id="app" class="ec-layoutRole">
+    {# Layout: HEADER #}
+    {% if Layout.Header %}
+        <header id="header" class="ec-layoutRole__header">
+            <div id="header__main">
+                <div class="container">
+                    <div id="header__main__inner">
+                        <div class="hum sp-content open">
+                            <div class="shape"><span></span><span></span></div>
+                            <div>メニュー</div>
+                        </div>
+                        {{ include('block.twig', {'Blocks': Layout.Header}) }}
+                    </div>
+                </div>
+            </div>
+        </header>
+    {% endif %}
+
+    <main id="content">
+        {# Layout: CONTENTS_TOP #}
+        {% if Layout.ContentsTop %}
+            <div class="ec-layoutRole__contentTop">
+                {{ include('block.twig', {'Blocks': Layout.ContentsTop}) }}
+            </div>
+        {% endif %}
+        
+        <div class="container">
+        {% block title %}{% endblock %}
+        </div>
+        
+        <div class="ec-layoutRole__contents">
+
+            {% if Layout.SideLeft %}
+                <div class="container">
+                <div class="row-sidebar mainitemarea">
+            {% endif %}
+
+
+            {# Layout: SIDE_LEFT #}
+            {% if Layout.SideLeft %}
+                <div class="ec-layoutRole__left row-sidebar__left pc-content">
+                    {{ include('block.twig', {'Blocks': Layout.SideLeft}) }}
+                </div>
+            {% endif %}
+
+            {% set layoutRoleMain = 'ec-layoutRole__main' %}
+            {% if Layout.ColumnNum == 2 %}
+                {% set layoutRoleMain = 'ec-layoutRole__mainWithColumn' %}
+            {% elseif Layout.ColumnNum == 3 %}
+                {% set layoutRoleMain = 'ec-layoutRole__mainBetweenColumn' %}
+            {% endif %}
+
+            {% if Layout.SideLeft %}
+                <div class="{{ layoutRoleMain }} row-sidebar__right mainitemarea__right">
+            {% else %}
+                <div class="{{ layoutRoleMain }}">
+            {% endif %}
+            
+                {# Layout: MAIN_TOP #}
+                {% if Layout.MainTop %}
+                    <div class="ec-layoutRole__mainTop">
+                        {{ include('block.twig', {'Blocks': Layout.MainTop}) }}
+                    </div>
+                {% endif %}
+
+
+                {# MAIN AREA #}
+                <div class="{% if Page.url != 'homepage' %}single-page__cont{% endif %} wide">
+                    {% block main %}{% endblock %}
+                </div>
+                
+                {# Layout: MAIN_Bottom #}
+                {% if Layout.MainBottom %}
+                    <div class="ec-layoutRole__mainBottom">
+                        {{ include('block.twig', {'Blocks': Layout.MainBottom}) }}
+                    </div>
+                {% endif %}
+            </div>
+
+            {# Layout: SIDE_RIGHT #}
+            {% if Layout.SideRight %}
+                <div class="ec-layoutRole__right">
+                    {{ include('block.twig', {'Blocks': Layout.SideRight}) }}
+                </div>
+            {% endif %}
+
+            {% if Layout.SideLeft %}
+                </div>
+                </div>{# end row-sidebar #}
+            {% endif %}
+        </div>
+
+        {# Layout: CONTENTS_BOTTOM #}
+        {% if Layout.ContentsBottom %}
+            <div class="ec-layoutRole__contentBottom">
+                {{ include('block.twig', {'Blocks': Layout.ContentsBottom}) }}
+            </div>
+        {% endif %}
+    </main>
+
+    {# Layout: CONTENTS_FOOTER #}
+    {% if Layout.Footer %}
+        <footer id="footer" class="ec-layoutRole__footer">
+            <div class="container">
+                {{ include('block.twig', {'Blocks': Layout.Footer}) }}
+            </div>
+        </footer>
+    {% endif %}
+</div><!-- ec-layoutRole -->
+
+<div class="sp-navigation__overlay"></div>
+<div class="sp-navigation">
+    
+    {# Layout: DRAWER #}
+    {% if Layout.Drawer %}
+    <div class="sp-navigation__inner">
+        {{ include('block.twig', {'Blocks': Layout.Drawer}) }}
+    </div>
+    {% endif %}
+    
+</div>
+<div class="ec-blockTopBtn pagetop">
+    <span>TOP</span>
+</div>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/jquery.slick/1.6.0/slick.min.js"></script>
+{% include('@common/lang.twig') %}
+<script src="{{ asset('assets/js/function.js') }}"></script>
+<script src="{{ asset('assets/js/eccube.js') }}"></script>
+<script src="{{ asset('assets/js/theme.js') }}"></script>
+<script>
+$(function(){
+    var cartBtn = $('#cartBtn')
+    var cartPopup = $('.carPopup')
+    cartBtn.on('click',function(e){
+        e.preventDefault();
+        setCartPosition(cartBtn,cartPopup)
+        $(this).toggleClass('opned')
+
+        if($(this).hasClass('opned')){
+            cartPopup.fadeIn('fast')
+        } else {
+            resetCartPosition(cartPopup)
+            cartPopup.hide()
+        }
+    })
+
+    $('.carPopup .ec-cartNavi--cancel').on('click',function(){
+        resetCartPosition(cartPopup)
+        cartPopup.hide();
+        cartBtn.removeClass('opned')
+    })
+
+    
+    $(window).resize(function(){
+        if(cartPopup.is(':visible')){
+            setCartPosition(cartBtn,cartPopup)
+        }
+    })
+    
+
+    function setCartPosition(btn,popup){
+        var topPos = btn.offset().top + btn.outerHeight()
+        if(topPos < 60){
+            topPos = 60
+        }
+
+        var leftPos
+        if($(window).width() - btn.offset().left > popup.outerWidth()){
+            leftPos = btn.offset().left
+        } else {
+            leftPos = $(window).width() - popup.outerWidth()
+        }
+
+        popup.offset({
+            top: topPos,
+            left: leftPos
+        });
+        
+    }
+    function resetCartPosition(popup){
+        popup.offset({
+            top: 0,
+            left: 0
+        });
+    }
+})
+
+$(function(){
+    var searchBtn = $('#searchBtn')
+    var searchPopup = $('.searchPopup')
+    searchBtn.on('click',function(e){
+        e.preventDefault();
+        setSearchPosition(searchBtn,searchPopup)
+        $(this).toggleClass('opned')
+
+        if($(this).hasClass('opned')){
+            searchPopup.fadeIn('fast')
+        } else {
+            resetSearchPosition(searchPopup)
+            searchPopup.hide()
+        }
+    })
+
+    $(window).resize(function(){
+        if(searchPopup.is(':visible')){
+            setSearchPosition(searchBtn,searchPopup)
+        }
+    })
+    
+
+    function setSearchPosition(btn,popup){
+        var topPos = btn.offset().top + btn.outerHeight()
+        if(topPos < 60){
+            topPos = 60
+        }
+
+        var leftPos
+        if($(window).width() - btn.offset().left > popup.outerWidth()){
+            leftPos = btn.offset().left
+        } else {
+            leftPos = $(window).width() - popup.outerWidth()
+        }
+
+        popup.offset({
+            top: topPos,
+            left: leftPos
+        });
+        
+    }
+    function resetSearchPosition(popup){
+        popup.offset({
+            top: 0,
+            left: 0
+        });
+    }
+})
+</script>
+{% block javascript %}{% endblock %}
+{# Layout: CLOSE_BODY_BEFORE #}
+{% if Layout.CloseBodyBefore %}
+    {{ include('block.twig', {'Blocks': Layout.CloseBodyBefore}) }}
+{% endif %}
+{# プラグイン用Snippet #}
+{% if plugin_snippets is defined %}
+    {{ include('snippet.twig', { snippets: plugin_snippets }) }}
+{% endif %}
+    <script src="{{ asset('assets/js/customize.js', 'user_data') }}"></script>
+</body>
+</html>

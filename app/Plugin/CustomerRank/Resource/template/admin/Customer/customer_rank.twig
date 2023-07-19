@@ -1,0 +1,29 @@
+{#
+* Plugin Name : CustomerRank
+*
+* Copyright (C) BraTech Co., Ltd. All Rights Reserved.
+* http://www.bratech.co.jp/
+*
+* For the full copyright and license information, please view the LICENSE
+* file that was distributed with this source code.
+#}
+
+<div id="customer_rank" style="display:none;">
+    <div class="row mb-2">
+        <div class="col-3">
+            <span>{{ form.children.CustomerRank.vars.label }}</span>
+        </div>
+        <div class="col">
+            {{ form_widget(form.CustomerRank) }}
+            {{ form_errors(form.CustomerRank) }}
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function() {
+        $elem = $('#customer_rank');
+        $('.card-body:eq(0)', this).prepend($elem.html());
+        $elem.remove();
+    });
+</script>

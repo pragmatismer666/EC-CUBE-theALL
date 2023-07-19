@@ -1,0 +1,150 @@
+{% extends '@admin/default_frame.twig' %}
+
+{% set menus = ['series', 'list'] %}
+
+{% block title %}{{ 'malldevel.admin.series'|trans }}{% endblock %}
+{% block sub_title %}{{ '一覧'|trans }}{% endblock %}
+
+{% block stylesheet %}
+<style>
+.img-series-thumbnail {
+    width: 80px;
+    height: 45px;
+    object-fit: cover;
+}
+</style>
+{% endblock %}
+{% block javascript %}
+
+    <script src="{{ asset('assets/js/vendor/jquery.ui/jquery.ui.core.min.js', 'admin') }}"></script>
+    <script src="{{ asset('assets/js/vendor/jquery.ui/jquery.ui.widget.min.js', 'admin') }}"></script>
+    <script src="{{ asset('assets/js/vendor/jquery.ui/jquery.ui.mouse.min.js', 'admin') }}"></script>
+    <script src="{{ asset('assets/js/vendor/jquery.ui/jquery.ui.sortable.min.js', 'admin') }}"></script>
+
+    <script>
+        $(function() {
+            var oldSortNos = [];
+            $('.sortable-item').each(function() {
+                oldSortNos.push(this.dataset.sortNo);
+            });
+            oldSortNos.sort(function(a, b) {
+                return a - b;
+            });
+            // 並び替え後にsort noを更新
+            var updateSortNo = function() {
+                var newSortNos = {};
+                var i = 0;
+                $('.sortable-item').each(function() {
+                    newSortNos[this.dataset.id] = oldSortNos[i];
+                    i++;
+                });
+                $.ajax({
+                    url: '{{ url('malldevel_admin_series_move') }}',
+                    type: 'POST',
+                    data: newSortNos
+                }).always(function() {
+                    $(".modal-backdrop").remove();
+                });
+            };
+            // 最初と最後の↑↓を再描画
+            var redrawDisableAllows = function() {
+                var items = $('.sortable-item');
+                items.find('a.action-up').removeClass('disabled');
+                items.find('a.action-down').removeClass('disabled');
+                items.first().find('a.action-up').addClass('disabled');
+                items.last().find('a.action-down').addClass('disabled');
+            };
+            // オーバレイ後, 表示順の更新を行う
+            var moveSortNo = function() {
+                $('body').append($('<div class="modal-backdrop show"></div>'));
+                updateSortNo();
+                redrawDisableAllows();
+            };
+            // Drag and Drop
+            $('.sortable-container').sortable({
+                items: '> .sortable-item',
+                cursor: 'move',
+                update: function(e, ui) {
+                    moveSortNo();
+                }
+            });
+            // Up
+            $('.sortable-item').on('click', 'a.action-up', function(e) {
+                e.preventDefault();
+                var current = $(this).parents("li");
+                if (current.prev().hasClass('sortable-item')) {
+                    current.prev().before(current);
+                    moveSortNo();
+                }
+            });
+            // Down
+            $('.sortable-item').on('click', 'a.action-down', function(e) {
+                e.preventDefault();
+                var current = $(this).parents("li");
+                if (current.next().hasClass('sortable-item')) {
+                    current.next().after(current);
+                    moveSortNo();
+                }
+            });
+
+        })
+    </script>
+{% endblock %}
+
+{% block main %}
+<div class="c-contentsArea__cols">
+    <div class="c-contentsArea__primaryCol">
+        <div id="ex-primaryCol" class="c-primaryCol">
+            <div class="card rounded border-0 mb-4">
+                <div class="card-body p-0">
+                    <div class="card rounded border-0">
+                        <ul class="list-group list-group-flush sortable-container">
+                            <li class="list-group-item">
+                                <div class="row">
+                                    <div class="col-auto"><strong>&nbsp;</strong></div>
+                                    <div class="col-auto"><strong>{{ 'admin.common.id'|trans }}</strong></div>
+                                    <div class="col-2"><strong></strong>{{ 'malldevel.admin.series'|trans }}</div>
+                                </div>
+                            </li>
+                            {% if Series|length > 0 %}
+                                {% for SeriesItem in Series %}
+                                    <li id="ex-series-{{ SeriesItem.id }}" class="list-group-item sortable-item" data-id="{{ SeriesItem.id }}" data-sort-no="{{ SeriesItem.sort_no }}">
+                                        <div class="row justify-content-around mode-view">
+                                            <div class="col-auto d-flex align-items-center">
+                                                <i class="fa fa-bars text-ec-gray"></i>
+                                            </div>
+                                            <div class="col-auto d-flex align-items-center">{{ SeriesItem.id }}</div>
+                                            <div class="col d-flex align-items-center">
+                                                <img class="mr-2 img-series-thumbnail" src="{{ asset(SeriesItem.ThumbnailPath, 'save_image')|no_image_product }}"/>
+                                                <a href="{{ path('malldevel_admin_series_edit', {'id' : SeriesItem.id}) }}">{{ SeriesItem.name }}</a>
+                                            </div>
+                                            <div class="col-auto text-right">
+                                                <a class="btn btn-ec-actionIcon action-up mr-2
+                                                    {% if loop.first %} disabled {% endif %}" href=""
+                                                    data-tooltip="true" data-placement="top"
+                                                    title="{{ 'admin.common.up'|trans }}">
+                                                    <i class="fa fa-arrow-up fa-lg text-secondary"></i>
+                                                </a>
+                                                <a class="btn btn-ec-actionIcon action-down mr-2 {% if loop.last %} disabled {% endif %}" href= ""
+                                                    data-tooltip="true" data-placement="top"
+                                                    title="{{ 'admin.common.down'|trans }}">
+                                                    <i class="fa fa-arrow-down fa-lg text-secondary"></i>
+                                                </a>
+                                                <a class="btn btn-ec-actionIcon mr-2 action-edit"
+                                                    href="{{ path('malldevel_admin_series_edit', {'id' : SeriesItem.id}) }}"  data-tooltip="true" data-placement="top"
+                                                    title="">
+                                                    <i class="fa fa-pencil fa-lg text-secondary"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

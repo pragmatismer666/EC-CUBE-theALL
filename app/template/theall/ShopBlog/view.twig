@@ -1,0 +1,41 @@
+{% extends 'default_frame.twig' %}
+
+{% set page_name = 'shopdetail' %}
+
+{% block main %}
+    <div class="shopdetail-page__cont__main">
+        <div class="container">
+            <div class="shopdetail-page__cont__main__head">
+                <div class="img"><img src="{{ asset(ShopBlog.Shop.LogoPath|no_image_product, 'save_image') }}" alt="{{ ShopBlog.Shop.name }}ロゴ"></div>
+                <h1>{{ ShopBlog.Shop.name }}</h1>
+            </div>
+        </div>
+    </div>
+    <div class="blog">
+        <div class="container">
+            <div class="blog__cont">
+                <div class="date">{{ ShopBlog.publish_date|date("Y.m.d") }}</div>
+                <h2 class="blog__cont__ttl">{{ ShopBlog.title }}</h2>
+                {{ ShopBlog.content|raw }}
+                <div class="page-navigation">
+                    {% if prev_id is not empty %}
+                    <a class="prev" href="{{ url('malldevel_front_shop_blog', {id: prev_id}) }}">&lt; 前へ</a>
+                    {% endif %}
+                    {% if next_id is not empty %}
+                    <a class="next" href="{{ url('malldevel_front_shop_blog', {id: next_id}) }}">次へ &gt;</a>
+                    {% endif %}
+                </div>
+                <div class="back-link"><a href="{{ url('malldevel_front_shop_detail', {id: ShopBlog.Shop.id}) }}">ショップに戻る</a></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        (function() {
+            const breadcrumbMeta = document.querySelector(`.breadcrumb [itemprop=itemListElement] meta[itemprop=position][content='3']`);
+            if (!breadcrumbMeta) {
+                return;
+            }
+            breadcrumbMeta.parentElement.querySelector('[itemprop=item]').setAttribute('href', "{{ url('malldevel_front_shop_detail', {id: ShopBlog.Shop.id}) }}");
+        })();
+    </script>
+{% endblock %}

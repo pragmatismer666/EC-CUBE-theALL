@@ -1,0 +1,16 @@
+malldevel.admin.feature.show_list: Shown Features
+malldevel.admin.feature.related_shop: Related Shop
+malldevel.admin.feature.related_products: Related Products
+malldevel.admin.feature.related_product.add: Add Product
+malldevel.admin.feature.related_product.add.error.no_shop_selected: Please select Shop
+malldevel.admin.stripe.shop.verification_status: Verification Status
+malldevel.admin.stripe.shop.check_verify_status: Check verify status
+malldevel.admin.stripe.shop.stripe_register_link: Stripe Register Link
+malldevel.admin.stripe.error.not_registered: Not Registered to Stripe
+malldevel.admin.stripe.requirement.no_error: Fully verified
+malldevel.admin.stripe.upload_iddoc: Verify Identity Document
+malldevel.admin.stripe.upload_iddoc.success: Successfully uploaded to Stripe
+malldevel.admin.stripe.upload_iddoc.no_iddoc: Please upload Identity Document first
+malldevel.admin.stripe.order.invalid_request: Invalid Request
+malldevel.admin.stripe.order.status.refund_success: Successfully refunded
+malldevel.admin.shop.company_image.file_count_limit_message: You can upload up to 3

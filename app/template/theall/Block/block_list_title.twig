@@ -1,0 +1,16 @@
+<section>
+    <h1 class="mb-0">
+        {% if Tag is not empty %}
+            #{{ Tag.name }}
+        {% elseif Category is not empty %}
+            {{ Category.name }}
+        {% else %}
+            {{ BlogType.name }}
+        {% endif %}
+    </h1>
+</section>
+<style>
+    .page-blogarchive h1 {
+        margin-bottom: 0!important;
+    }
+</style>

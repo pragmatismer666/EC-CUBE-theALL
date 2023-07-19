@@ -1,0 +1,33 @@
+{% extends '@admin/default_frame.twig' %}
+
+{% set menus = ['mshop', 'apply_list'] %}
+
+{% block title %}{{ 'malldevel.admin.shop.label'|trans }}{% endblock %}
+
+{% block sub_title %}{{ 'malldevel.admin.apply.stripe_apply'|trans }}{% endblock %}
+
+{% block stylesheet %}
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+<style>
+.apply-hold-wrapper {
+    display: flex;
+    justify-content: center;
+    font-size: 20px;
+}
+</style>
+{% endblock %}
+
+{% block javascript %}
+    <script src="{{ asset('assets/js/vendor/fileupload/vendor/jquery.ui.widget.js', 'admin') }}"></script>
+    <script src="{{ asset('assets/js/vendor/fileupload/jquery.iframe-transport.js', 'admin') }}"></script>
+{% endblock %}
+
+{% block main %}
+<div class="c-contentsArea__cols">
+    <div class="c-contentsArea_primaryCol">
+        <div class="apply-hold-wrapper">
+            {{ 'malldevel.admin.apply.on_hold.message'|trans }}
+        </div>
+    </div>        
+</div>
+{% endblock %}

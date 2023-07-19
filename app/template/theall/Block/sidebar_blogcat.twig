@@ -1,0 +1,24 @@
+{% if CategoryList|length > 0 %}
+    <div class="row-sidebar__left__item">
+        <h4>カテゴリー一覧</h4>
+        <div>
+            <ul>
+                {% for Cat in CategoryList %}
+                    <li><a href="{{ url('malldevel_front_blog_category_' ~ ns, {category_id: Cat.id}) }}">{{ Cat.name }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endif %}
+{% if TagList|length > 0 %}
+<div class="row-sidebar__left__item">
+    <h4>タグ一覧</h4>
+    <div>
+        <ul class="tag-list">
+            {% for T in TagList %}
+                <li><a href="{{ url('malldevel_front_blog_tag_' ~ ns, {tag_id: T.id}) }}">#{{ T.name }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endif %}

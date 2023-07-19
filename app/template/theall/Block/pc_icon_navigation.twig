@@ -1,0 +1,41 @@
+<div class="mini-menu">
+    <ul>
+      <li>
+        <a href="/products/list?category_id=&name=" data-toggle="tooltip" title="検索" id="searchBtn">
+          {# <img src="{{ asset('assets/img/picto-01.png') }}" alt="" width=23> #}
+          <i class="fas fa-search fa-fw" style="font-size: 20px;"></i>
+        </a>
+      </li>
+      <li class="pc-content">
+        <a href="{{ url('mypage') }}" data-toggle="tooltip" title="マイページ">
+          {# <img src="{{ asset('assets/img/picto-02.png') }}" alt="" width=23> #}
+          <i class="fas fa-user fa-fw" style="font-size: 20px;"></i>
+        </a>
+      </li>
+      <li class="pc-content">
+        <a href="{{ url('mypage_favorite') }}" data-toggle="tooltip" title="お気に入り">
+          {# <img src="{{ asset('assets/img/picto-03.png') }}" alt="" width=23> #}
+          <i class="fas fa-heart fa-fw" style="font-size: 20px;"></i>
+        </a>
+      </li>
+      <li>
+        <a href="/cart" data-toggle="tooltip" title="カート" id="cartBtn">
+          {# <img src="{{ asset('assets/img/picto-04.png') }}" alt="" width=23> #}
+          <i class="fas fa-shopping-cart fa-fw" style="font-size: 20px;"></i>
+        </a>
+      </li>
+      {% if is_granted('ROLE_USER') %}
+      <li>  
+<a href="{{ url('logout') }}" data-toggle="tooltip" title="ログアウト">
+{# <img src="{{ asset('assets/img/picto-05.png') }}" alt="" width=23> #}
+<i class="fas fa-lock fa-fw" style="font-size: 20px;"></i>
+</a>   
+{# <a href="{{ url('mypage_login') }}"> #}
+{# <img src="{{ asset('assets/img/picto-05.png') }}" alt="" width=23> #}
+{# <i class="fas fa-lock fa-fw" style="font-size: 20px;"></i>
+</a> #}
+      {# {% endif %} #}
+      </li>
+      {% endif %}
+    </ul>
+</div>

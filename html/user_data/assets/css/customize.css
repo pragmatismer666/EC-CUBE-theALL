@@ -1,0 +1,73 @@
+.ec-pageHeader h1 {
+    border-bottom: none!important;
+    margin: 0 0 70px 0;
+}
+.ec-link {
+    color: #CB1569;
+}
+.ec-link:hover {
+    color: #941c53;
+}
+.ec-zipInputHelp span {
+    color: #CB1569;
+}
+.feature .feature__list .img img {
+    width: 100%;
+    object-fit:cover;
+    height: 190px;
+}
+@media screen and (max-width: 767px) {
+    .feature .feature__list .img img {
+        height: 40vw;
+    }
+}
+.ec-customerHistoryRole .product-item,
+.ec-customerHistoryRole .shop-item {
+    display: block;
+}
+.ec-customerHistoryRole .img,
+.series-product-list .img {
+    display: block;
+    width: 100%;
+    height: auto;
+    position: relative;
+    overflow: hidden;
+    padding: 66.67% 0 0 0;
+}
+
+.ec-customerHistoryRole .img img,
+.series-product-list .img img {
+    display: block;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+.item-list__item {
+    word-break: break-all;
+}
+.ec-layoutRole .ec-layoutRole__contents {
+    flex-direction: column;
+}
+.review-comment {
+    word-break: break-all;
+}
+.ec-borderedDefs .ec-input {
+    word-break: break-all;
+}
+.news__box ul li {
+    display: flex;
+}
+.news__box ul li .cat {
+    align-self: flex-start;
+}
+
+.tooltip-inner{
+    white-space: nowrap;
+}
+
+.single-page .shoplist-page__cont__nameorder li {
+    width: 8.9%;
+}

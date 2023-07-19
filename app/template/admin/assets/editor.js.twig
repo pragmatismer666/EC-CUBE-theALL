@@ -1,0 +1,64 @@
+<script>
+    if ( CKEDITOR.env.ie && CKEDITOR.env.version < 9 )
+        CKEDITOR.tools.enableHtml5Elements( document );
+
+    // The trick to keep the editor in the sample quite small
+    // unless user specified own height.
+    CKEDITOR.config.height = 600;
+    CKEDITOR.config.width = 'auto';
+    CKEDITOR.config.extraPlugins = 'uploadimage';
+    CKEDITOR.config.extraPlugins = 'videoembed';
+    CKEDITOR.config.uploadUrl = 
+        {% if Shop is defined and Shop is not empty %}
+            "{{ url('malldevel_admin_image_upload_with_id', { id : Shop.id }) }}"
+        {% elseif CURRENT_ROLE == 'ROLE_ADMIN'  %}
+            "{{ url('malldevel_admin_image_upload') }}"
+        {% endif %}
+
+    var initCkeditor = (function() {
+        
+        var wysiwygareaAvailable = isWysiwygareaAvailable(),
+            isBBCodeBuiltIn = !!CKEDITOR.plugins.get( 'bbcode' );
+
+        return function( options ) {
+
+            var default_options = {
+                selector_id      :   "editor",
+                data    :   "{% if Shop is defined and Shop is not empty %} {{ Shop.Name }} {% else %} Title {% endif %}"
+            }
+
+            options = Object.assign(default_options, options)
+
+            var editorElement = CKEDITOR.document.getById( options.selector_id );
+
+            // :(((
+            if ( isBBCodeBuiltIn ) {
+                editorElement.setHtml(options.data);
+            }
+
+            // Depending on the wysiwygarea plugin availability initialize classic or inline editor.
+            if ( wysiwygareaAvailable ) {
+                {# CKEDITOR.replace( 'editor' ); #}
+                CKEDITOR.replace( options.selector_id );
+            } else {
+                editorElement.setAttribute( 'contenteditable', 'true' );
+                CKEDITOR.inline( options.selector_id );
+
+                // TODO we can consider displaying some info box that
+                // without wysiwygarea the classic editor may not work.
+            }
+        };
+
+        function isWysiwygareaAvailable() {
+            // If in development mode, then the wysiwygarea must be available.
+            // Split REV into two strings so builder does not replace it :D.
+            if ( CKEDITOR.revision == ( '%RE' + 'V%' ) ) {
+                return true;
+            }
+
+            return !!CKEDITOR.plugins.get( 'wysiwygarea' );
+        }
+    })() ;
+    
+
+</script>

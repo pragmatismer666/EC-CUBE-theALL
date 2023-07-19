@@ -1,0 +1,44 @@
+{% extends 'default_frame.twig' %}
+
+{% set container_class = 'blog' %}
+
+{% block main %}
+    <div class="blog__cont">
+        <div class="meta">
+            {% if Blog.Category.name|default('') is not empty %}
+                <div class="cat">{{ Blog.Category.name }}</div>
+            {% endif %}
+            <div class="date">{{ Blog.publish_date|date("Y.m.d") }}</div>
+        </div>
+        <h1 class="blog__cont__ttl">{{ Blog.title }}</h1>
+        {{ Blog.content|raw }}
+        <div class="page-navigation">
+            {% if prev_id is not empty %}
+            <a class="prev" href="{{ url('malldevel_front_blog_view', {id: prev_id}) }}">&lt; 前へ</a>
+            {% endif %}
+            {% if next_id is not empty %}
+            <a class="next" href="{{ url('malldevel_front_blog_view', {id: next_id}) }}">次へ &gt;</a>
+            {% endif %}
+        </div>
+        <div class="back-link"><a href="">ショップに戻る</a></div>
+    </div>
+    <script>
+        (function() {
+            const breadcrumbs = `
+                <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <a itemprop="item" href="{{ url(parent_path) }}">
+                        <span itemprop="name">{{ Blog.BlogType.name|default('') }}</span>
+                    </a>
+                    <meta itemprop="position" content="2">
+                </li>
+                <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <a itemprop="item" href="javascript: void(0);">
+                        <span itemprop="name">{{ Blog.title }}</span>
+                    </a>
+                    <meta itemprop="position" content="3">
+                </li>
+            `;
+            $(".breadcrumb").append(breadcrumbs);
+        })();
+    </script>
+{% endblock %}

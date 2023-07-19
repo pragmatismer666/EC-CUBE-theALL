@@ -1,0 +1,175 @@
+<div id="main-slider-wrap">
+  <div id="main-slider">
+      <div class="slide slide01">
+          <img src="{{ asset('assets/img/main.png') }}" >
+          <div class="container">
+          <div class="main__cont">
+            <div class="catch">ぴったりを探そう</div>
+          </div>
+          </div>
+      </div>
+      <div class="slide slide02">
+          <img src="/html/upload/save_image/admin/0318144629_6052e9358c6f7.jpeg" >
+      </div>
+      <div class="slide slide03">
+          <img src="/html/upload/save_image/admin/0318144552_6052e9101d06f.jpeg" >
+      </div>
+      <div class="slide slide04">
+          <img src="/html/upload/save_image/admin/0318144647_6052e947df896.jpeg" >
+      </div>
+      <div class="slide slide05">
+          <img src="/html/upload/save_image/admin/0318144655_6052e94f18dde.jpeg" >
+      </div>
+  </div>
+
+  <div id="main-text-slider-wrap">
+    <div class="container">
+        <div id="main-text-slider">
+          <h2 class="shop-name">THE ALL</h2>
+          <h2 class="shop-name">DC2モール</h2>
+          <h2 class="shop-name">BUYER SHOP　KODAWARI</h2>
+          <h2 class="shop-name">SPECIALTY SHOP　匠</h2>
+          <h2 class="shop-name">スーパー世代のこだわり（仮）</h2>
+        </div>
+      </div>
+  </div>
+</div>
+<style>
+#main-slider-wrap{
+  position: relative;
+}
+#main-slider{
+  height: 760px;
+}
+#main-text-slider-wrap{
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+
+}
+#main-text-slider{
+  width: 550px;
+}
+
+#main-text-slider .slick-dots{
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  margin-top: -3px;
+  position: relative;
+}
+#main-text-slider .slick-dots li{
+  flex: 1;
+}
+#main-text-slider .slick-dots li button{
+  height: 3px;
+  background: #333333;
+  display: block;
+  width: 100%;
+  border: 0;
+  text-indent: -99999px;
+  opacity: 0;
+}
+#main-text-slider .slick-track{
+  display: flex;
+  align-items: flex-end;
+}
+
+#main-text-slider .slick-dots li.slick-active button{
+  opacity: 1;
+}
+.page-homepage .shop-name {
+  margin: 0;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  background: #fff;
+  display: inline-block;
+  font-size: 2.8rem;
+  font-weight: bold;
+  padding: 30px 60px;
+}
+
+#main-slider .slide{ position: relative; min-height: 760px;}
+#main-slider .slide img{
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  object-fit: cover;
+  max-width: initial;
+  max-height: initial;
+  width: 100%;
+  height: 100%;
+}
+@media screen and (max-width: 767.98px) {
+  #main-slider {
+    height: 400px; 
+  }
+  #main-slider .slide{ position: relative; min-height: 400px;}
+  #main-text-slider h2{
+    font-size: 2rem;
+    padding: 15px 30px;
+  }
+  #main-text-slider{
+    width: 100%;
+  }
+}
+
+</style>
+
+<script>
+$(function(){
+    $('#main-slider').slick({
+        arrows:false,
+        dots: false,
+        autoplay: false,
+        asNavFor: '#main-text-slider',
+        fade: true,
+    });
+    $('#main-text-slider').slick({
+      slidesToShow: 1,
+      slidesToScroll: 1,
+      asNavFor: '#main-slider',
+      dots: true,
+      arrows: false,
+      fade: true,
+    });
+    
+    setTimeout(function() {
+            $('#main-slider').slick('slickSetOption', {
+               autoplay: true,
+               autoplaySpeed: 3000,
+            }, true);
+    }, 3000);
+})
+</script>
+
+{#<section class="main">#}
+{#    <div class="container">#}
+{#		<div class="main__cont">#}
+{#			<div class="catch">ぴったりを探そう</div>#}
+{#			<h2 class="shop-name">THE ALL</h2>#}
+{#		</div>#}
+{#    </div>#}
+{#</section>#}
+
+<section class="banners">
+    <div class="container">
+		<div class="banners__list">
+			{% set SeriesList = repository('Customize\\Entity\\Master\\Series').getList() %}
+			{% for Series in SeriesList %}
+			<div class="banners__list__item">
+				<a href="{{ path('malldevel_front_series_detail', { 'id' : Series.id }) }}">
+					<div class="img"><img src="{{ asset(Series.ThumbnailPath, 'save_image') }}" alt="" style="min-height: 120px; object-fit: cover;"></div>
+					<h3>{{ Series.name }}</h3>
+				</a>
+			</div>
+			{% endfor %}
+		</div>
+    </div>
+</section>

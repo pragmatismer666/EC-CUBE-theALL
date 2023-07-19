@@ -1,0 +1,32 @@
+{#
+* Plugin Name : CustomerRank
+*
+* Copyright (C) BraTech Co., Ltd. All Rights Reserved.
+* http://www.bratech.co.jp/
+*
+* For the full copyright and license information, please view the LICENSE
+* file that was distributed with this source code.
+#}
+
+
+    <div id="customer_rank" style="display:none;">
+        <div class="row">
+            <label class="col-3">{{ 'customerrank.common.rank'|trans }}</label>
+            <div class="col">
+                {{ Order.customer_rank_name }}&nbsp;&nbsp;&nbsp;{% if Order.present_customer_rank_name is not empty %}({{ 'customerrank.admin.order.edit.label.now'|trans }}:{{ Order.present_customer_rank_name }}){% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(function() {
+            $('label').each(function(i) {
+                if($(this).text().match(/{{'admin.customer.customer_id'|trans}}/)){
+                    $elem = $('#customer_rank');
+                    $(this).parent().after($elem.html());
+                    $elem.remove();
+                }
+            });
+
+        });
+    </script>

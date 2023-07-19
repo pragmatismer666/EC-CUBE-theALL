@@ -1,0 +1,70 @@
+{% extends 'default_frame.twig' %}
+{% block title %}
+<h1>THE ALLについて</h1>
+{% endblock %}
+{% block stylesheet %}
+<style>
+.series-list-top-description {
+    overflow-wrap: anywhere;
+}
+.series-list-top-logo {
+    display: flex;
+    justify-content: center;
+    min-height: 250px;
+}
+.series-list-item {
+    margin-bottom: 35px;
+    margin-top: 40px;
+}
+</style>
+{% endblock %}
+
+{% block main %}
+<div class="series-list-top-image">
+    <img src="/html/template/theall/assets/img/main.png">
+</div>
+<div class="row">
+    <div class="col-md-3">
+        <div class="series-list-top-logo d-flex">
+            <img src="/html/template/theall/assets/img/theall-logo.png" class="align-self-center">
+        </div>
+    </div>
+    <div class="col-md-9">
+        <div class="series-list-top-header"><h3>ぴ っ た り を 探 そ う</h3></div>
+        <div class="series-list-top-subheader"><h4>THE ALLは</h4></div>
+        <div class="series-list-top-description">
+            自ら企画、生産した商品を直接消費者へ提供するダイレクトショッピングモールです。
+            個と個の自然なふれあいで居心地の良さを感じさせるモールを目指しています。
+            コンセプトは「個と個が主役となるモール」で以下の4つの柱で構成されています。<br><br>
+１） D2C(Direct to Consumer)モール
+<p style="margin-left: 30px;">小売店及び製造業者が直接出品しています。</p>
+２） ＢＵＹＥＲ ＳＨＯＰ　ＫＯＤＡＷＡＲＩ
+<p style="margin-left: 30px;">日本国内及び海外のまだ認知度が低く地域限定だけの商品や食品をバイヤーが紹介しています。</p>
+３） ＳＰＥＣＩＡＬＴＹ ＳＨＯＰ　匠
+<p style="margin-left: 30px;">日本国内で固有の技術またはこだわり材料による製造に携わっている会社や商品を紹介しています。</p>
+４） スーパー世代のこだわり
+<p style="margin-left: 30px;">団塊世代向けのちょっと贅沢なこだわり商品を紹介しています。</p>
+
+<p style="margin-bottom: 30px; margin-top: 30px;">
+また、サイト運営者がジャンルに捉われず全国各地の情報を発信するサイトも設け、全国的にない知られていない情報など雑学や豆知識を紹介しています。
+例えば、全国区ではないが地域に存在する神社仏閣情報、水の効能（健康全般）、地産地消を推奨する農業者情報など。
+</p>
+        </div>
+    </div>
+</div>
+
+{% for Series in SeriesList %}
+<hr>
+<div class="series-list-item">
+    <div class="series-list-item-image">
+        <a href="{{ path('malldevel_front_series_detail', { 'id' : Series.id }) }}">
+            <img src="{{ asset(Series.ThumbnailPath, 'save_image') }}">
+        </a>
+    </div>
+    <div class="series-list-item-name">
+        <h2>{{ Series.name }}</h2>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}

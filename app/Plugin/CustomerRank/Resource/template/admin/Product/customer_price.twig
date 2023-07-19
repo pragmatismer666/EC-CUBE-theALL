@@ -1,0 +1,43 @@
+{#
+* Plugin Name : CustomerRank
+*
+* Copyright (C) BraTech Co., Ltd. All Rights Reserved.
+* http://www.bratech.co.jp/
+*
+* For the full copyright and license information, please view the LICENSE
+* file that was distributed with this source code.
+#}
+
+{% if has_class == false %}
+    <div id="customer_price" style="display:none;">
+    {% for CustomerRank in CustomerRanks %}
+        {% set value = 'customer_price_' ~ CustomerRank.id %}
+        <div class="row">
+            <div class="col-3">
+                <div class="d-inline-block" data-toggle="tooltip" data-placement="top"
+                     title="Tooltip">
+                    <span>{{ form.class.children[value].vars.label }}</span>
+                </div>
+            </div>
+            <div class="col mb-2">
+                <div>
+                    {{ form_widget(form.class[value]) }}
+                    {{ form_errors(form.class[value]) }}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+
+    <script>
+        $(function() {
+            $('div.row').each(function(i) {
+                if($(this).text().match(/{{'admin.product.sale_price'|trans}}/)){
+                    $elem = $('#customer_price');
+                    $(this).after($elem.html());
+                    $elem.remove();
+                }
+            });
+        });
+    </script>
+{% endif %}

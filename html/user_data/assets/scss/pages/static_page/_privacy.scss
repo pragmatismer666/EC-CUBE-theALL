@@ -1,0 +1,27 @@
+.ec-privacyRole {
+  section {
+    margin-bottom: 50px;
+    h2 {
+      font-size: $font-size-18 !important;
+    }
+    h3 {
+      font-size: $font-size-16 !important;
+    }
+  }
+  ol, ul {
+    margin-block-start: 0;
+    padding-inline-start: 20px;
+    li {
+      margin-bottom: 25px;
+    }
+  }
+  p + ol, li ol, p + ul, li ul {
+    margin-top: 25px;
+  }
+  .list-style-alphabet {
+    list-style: upper-alpha;
+  }
+  .list-style-disc {
+    list-style: disc;
+  }
+}

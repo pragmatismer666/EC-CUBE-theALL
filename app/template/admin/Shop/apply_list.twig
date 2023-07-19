@@ -1,0 +1,389 @@
+{% extends '@admin/default_frame.twig' %}
+
+{% set menus = ['mshop', 'apply_list'] %}
+{% block title %}{{ 'malldevel.admin.shop.label'|trans }}{% endblock %}
+
+{% block sub_title %}{{ 'malldevel.admin.apply.list'|trans }}{% endblock %}
+
+{% block stylesheet %}
+<style>
+table.shop-apply-list thead{
+    border-bottom: 2px solid #ccc;
+}
+table.shop-apply-list thead tr th{
+    border: none;
+}
+tr.shop-apply-item {
+    border-top: 1px solid #ccc;
+}
+tr.shop-apply-item td {
+    border: none;
+}
+.shop-apply-item:hover {
+    background: #ccc;
+}
+</style>
+{% endblock %}
+
+{% block javascript %}
+
+<script>
+    $(function() {
+        $(".action-edit").on('click', function (e) {
+            e.preventDefault();
+            $('.apply-status-form').addClass('d-none')
+            $('.apply-status').removeClass('d-none')
+            var current = $(this).parents('td')
+            current.find('.apply-status-form').removeClass('d-none');
+
+            var select = current.find('.apply-status-form select')
+            var originValue = select.data("origin-value")
+            select.val(originValue)
+            current.find('.apply-status').addClass('d-none')
+        })
+    })
+    $(".action-edit-cancel").on('click', function(e) {
+        e.preventDefault();
+        var current = $(this).parents('td')
+        current.find('.apply-status-form').addClass('d-none');
+        current.find('.apply-status').removeClass('d-none')
+    })
+    $(".apply-status-submit").on("click", function(e) {
+        e.preventDefault();
+        var current = $(this).parents('.apply-status-form')
+        var select = current.find('select')
+        var originValue = select.data('origin-value')
+        var value = current.find("select").val();
+        if (originValue == value) return;
+        
+        if (
+            (value == {{ constant('Customize\\Entity\\Apply::STATUS_ALLOWED') }} && confirm("{{ 'malldevel.admin.apply.confirm.allowed'|trans }}"))
+            || (value == {{ constant('Customize\\Entity\\Apply::STATUS_HOLD') }} && confirm("{{ 'malldevel.admin.apply.confirm.on_hold'|trans }}"))
+            || (value == {{ constant('Customize\\Entity\\Apply::STATUS_PROCESSING') }} && confirm("{{ 'malldevel.admin.apply.confirm.processing'|trans }}"))
+        ) {
+            var id = $(this).data("apply-id")
+            $.post(
+                "{{ url('malldevel_admin_apply_update_status') }}",
+                {
+                    id: id,
+                    status: value
+                }
+            )
+            .done(function(data) {
+                if (data.success) {
+                    location.reload();
+                } else if (data.message) {
+                    alert(data.message);
+                }
+            })
+            .fail(function() {
+                alert("{{ 'malldevel.admin.apply.status_update_failed'|trans }}")
+            })
+            return;
+        }
+    })
+</script>
+{% endblock %}
+
+{% block main %}
+
+<div class="c-outsideBlock">
+    <form name="search_form" id="search_form" method="POST" action="{{ url('malldevel_admin_apply_list') }}">
+        <div class="c-outsideBlock__contents">
+            <div class="row">
+                <div class="col-12">
+                    {{ form_widget(searchForm._token) }}
+                    <div>
+                        <label class="col-form-label" data-tooltip="true" data-placement="top">お名前</label>
+                        {{ form_widget(searchForm.name) }}
+                        {{ form_errors(searchForm.name) }}
+                    </div>
+                    <div class="d-inline-block mb-3 collapsed" data-toggle="collapse" href="#searchDetail" aria-expanded="false" aria-controls="searchDetail">
+                        <a>
+                            <i class="fa font-weight-bold mr-1 fa-plus-square-o">
+                                <span class="font-weight-bold">{{ 'admin.common.search_detail'|trans }}</span>
+                            </i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="c-subContents ec-collapse collapse{{ has_errors ? ' show' }}" id="searchDetail">
+            <div class="row">
+                <div class="col">
+                    <label class="col-form-label">ショップ名称</label>
+                    {{ form_widget(searchForm.shop_name) }}
+                    {{ form_errors(searchForm.shop_name) }}
+                </div>
+                <div class="col">
+                    <label class="col-form-label">連絡帳メールアドレス</label>
+                    {{ form_widget(searchForm.order_mail) }}
+                    {{ form_errors(searchForm.order_mail) }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label class="col-form-label">ログインID</label>
+                    {{ form_widget(searchForm.login_id) }}
+                    {{ form_errors(searchForm.login_id) }}
+                </div>
+                <div class="col">
+                    <label class="col-form-label">会社名</label>
+                    {{ form_widget(searchForm.company_name) }}
+                    {{ form_errors(searchForm.company_name) }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label class="col-form-label">住所</label>
+                    {{ form_widget(searchForm.Pref) }}
+                    {{ form_errors(searchForm.Pref) }}
+                </div>
+                <div class="col">
+                    <label class="col-form-label">代表者</label>
+                    {{ form_widget(searchForm.representative) }}
+                    {{ form_errors(searchForm.representative) }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div class="form-row">
+                        <div class="form-group col-12">
+                            <label class="col-form-label">状態</label>
+                            <div id="admin_search_order_status">
+                                {% set statusForm = searchForm.status %}
+                                <!-- 各対応状況の件数を表示する -->
+                                {% for status_id, child in statusForm.children %}
+                                    <div class="form-check form-check-inline">
+                                        <input type="checkbox"
+                                                id="{{ child.vars.id }}"
+                                                name="{{ child.vars.full_name }}"
+                                                class="form-check-input"
+                                                value="{{ child.vars.value }}"{{ child.vars.checked ? ' checked="checked"' }}>
+                                        <label class="form-check-label" for="{{ child.vars.id }}">{{ child.vars.label|trans }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            {{ form_errors(searchForm.status) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="c-outsideBlock__contents">
+            <div class="row">
+                <div class="mb-4">
+                    <div class="col-12">
+                        <button class="btn btn-ec-conversion px-5" type="submit" id="search_submit">{{ 'admin.common.search'|trans }}</button>
+                        {% if pagination %}
+                            <span class="font-weight-bold ml-2" id="search_total_count">{{ 'admin.common.search_result'|trans({"%count%":pagination.totalItemCount})|raw }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {# <div class="c-outsideBlock__contents mb-5">
+            {{ include('@admin/search_items.twig', { 'form': searchForm }, ignore_missing = true) }}
+        </div> #}
+    </form>
+</div>
+<div class="c-contentsArea__cols">
+    <div class="c-contentsArea__primaryCol">
+        <div class="c-primaryCol">
+            {% if pagination and pagination.totalItemCount %}
+                <form id="form_bulk" method="POST" action="">
+                    <div class="row justify-content-between mb-2">
+                        <div class="col-6">
+                            <div id="btn_bulk" class="d-none">
+                                <label class="mr-2">{{ 'admin.common.bulk_actions'|trans }}</label>
+                                <div class="btn-group mr-2" role="group">
+                                    <button {{ csrf_token_for_anchor() }} class="btn btn-ec-regular action-submit" type="button"
+                                        data-action="" >
+                                        <span>{{ 'malldevel.admin.shop.display_status__show'|trans }}</span>
+                                    </button>
+                                    <button {{ csrf_token_for_anchor() }} class="btn btn-ec-regular action-submit" type="button"
+                                        data-action="">
+                                        <span>{{ 'malldevel.admin.shop.display_status__hide'|trans }}</span>
+                                    </button>
+                                </div>
+                                <button type="button" data-toggle="modal" data-target="#bulkDeleteModal" class="btn btn-ec-delete">{{ 'admin.product.permanently_delete'|trans }}</button>
+                            </div>
+                        </div>
+                        <div class="col-5 text-right">
+                            <div class="d-inline-block mr-2">
+                                <div>
+                                    <select class="custom-select" onchange="location = this.value;">
+                                        {% for pageMax in pageMaxis %}
+                                            <option {% if pageMax.name == page_count %} selected=""{% endif %}
+                                                value="{{ path('admin_product_page', { 'page_no' : 1, 'page_count' : pageMax.name }) }}">
+                                                {{ 'admin.common.count'|trans({ '%count%' : pageMax.name }) }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="d-inline-block">
+                                {# csv buttons #}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card rounded border-0 mb-4 d-block">
+                        <div class="card-body p-0">
+                            <table class="table table-sm shop-apply-list">
+                                <thead>
+                                    <tr>
+                                        <th class="border-top-0 pl-3 pt-2 pb-2">
+                                            <input type="checkbox" name="filter" value="open" id="trigger_check_all">
+                                        </th>
+                                        <th class="border-top-0 pt-2 pb-2">お名前</th>
+                                        <th class="border-top-0 pt-2 pb-2">{{ 'malldevel.admin.shop.name'|trans }}</th>
+                                        <th class="border-top-0 pt-2 pb-2">{{ 'malldevel.admin.shop.order_mail'|trans }}</th>
+                                        <th class="border-top-0 pt-2 pb-2">ログインID</th>
+                                        <th class="border-top-0 pt-2 pb-2">会社名</th>
+                                        <th class="border-top-0 pt-2 pb-2">住所</th>
+                                        <th class="border-top-0 pt-2 pb-2">代表者</th>
+                                        <th class="border-top-0 pt-2 pb-2">出店予定時期</th>
+                                        <th class="border-top-0 pull-right text-center" style="max-width: 400px; min-width: 400px;">状態</th>
+                                        <th class="border-top-0 pt-2 pb-2"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for Apply in pagination %}
+                                        <tr id="ex-shop-{{ Apply.Id }}" class="shop-apply-item">
+                                            <td class="align-middle pl-3">
+                                                <input type="checkbox" name="ids[]" value="{{ Apply.id }}"/>
+                                            </td>
+                                            <td class="align-middle pl-3">
+                                                {{ Apply.Name }}
+                                            </td>
+                                            <td class="align-middle">
+                                                <a href="{{ url('malldevel_admin_apply_edit', { id: Apply.id })}}">
+                                                    {{ Apply.ShopName }}
+                                                </a>
+                                            </td>
+                                            <td class="align-middle">
+                                                {{ Apply.OrderMail }}
+                                            </td>
+                                            <td class="align-middle">
+                                                {{ Apply.LoginId }}
+                                            </td>
+                                            <td class="align-middle">
+                                                {{ Apply.CompanyName }}
+                                            </td>
+                                            <td class="align-middle">
+                                                {{ Apply.Pref.Name }}
+                                            </td>
+                                            <td class="align-middle">
+                                                {{ Apply.representative }}
+                                            </td>
+                                            <td class="align-middle">
+                                                {{ Apply.open_schedule|date_day }}
+                                            </td>
+                                            <td class="align-middle pull-right" style="max-width: 400px; min-width: 400px;">
+                                                <div class="apply-status" style="max-width: 400px; min-width: 400px;">
+                                                    {% if Apply.checkStatus(constant('Customize\\Entity\\Apply::STATUS_CANCELED')) %}
+                                                        <div class="text-center">
+                                                            {{ Apply.StatusLabel|trans }}
+                                                        </div>
+                                                    {% else %}
+                                                        <div class="text-center">
+                                                            <a class="btn btn-ec-actionIcon mr-2 action-edit" data-tooltip="true" data-placement="top" title="{{ 'admin.common.edit'|trans }}">
+                                                                {{ Apply.StatusLabel|trans }}
+                                                            </a>
+                                                        </div>
+                                                    {% endif %}
+                                                        {# {% if not Apply.checkStatus(constant('Customize\\Entity\\Apply::STATUS_CANCELED')) %}
+                                                        <div class="col-auto text-right">
+                                                            <a class="btn btn-ec-actionIcon mr-2 action-edit" data-tooltip="true" data-placement="top" title="{{ 'admin.common.edit'|trans }}">
+                                                                <i class="fa fa-pencil fa-lg text-secondary"></i>
+                                                            </a>
+                                                        </div>
+                                                        {% endif %} #}
+                                                    
+                                                </div>
+                                                {% if not Apply.checkStatus(constant('Customize\\Entity\\Apply::STATUS_CANCELED')) %}
+                                                <div class="apply-status-form d-none" style="max-width: 400px; min-width: 400px;">
+                                                    <div class="row">
+                                                        <div class="col-5">
+                                                            <select id="apply-status-select-{{ Apply.id }}" class="form-control" data-origin-value="{{ Apply.status }}">
+                                                                <option value="{{ constant('Customize\\Entity\\Apply::STATUS_PROCESSING') }}" 
+                                                                    {% if Apply.checkStatus(constant('Customize\\Entity\\Apply::STATUS_PROCESSING')) %}selected{% endif %}
+                                                                >
+                                                                    {{'malldevel.admin.apply.status.processig'|trans }}
+                                                                </option>
+                                                                <option value="{{ constant('Customize\\Entity\\Apply::STATUS_ALLOWED') }}"
+                                                                    {% if Apply.checkStatus(constant('Customize\\Entity\\Apply::STATUS_ALLOWED')) %}selected{% endif %}
+                                                                >
+                                                                    {{ 'malldevel.admin.apply.status.allowed'|trans }}
+                                                                </option>
+                                                                <option value="{{ constant('Customize\\Entity\\Apply::STATUS_HOLD' )}}"
+                                                                    {% if Apply.checkStatus(constant('Customize\\Entity\\Apply::STATUS_HOLD')) %}selected{% endif %}
+                                                                >
+                                                                    {{ 'malldevel.admin.apply.status.on_hold'|trans }}
+                                                                </option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="col-auto align-items-center">
+                                                            <button class="btn btn-ec-conversion apply-status-submit ladda-button" data-apply-id="{{ Apply.id }}" type="button">{{ 'admin.common.decision'|trans }}</button>
+                                                        </div>
+                                                        <div class="col-auto align-items-center">
+                                                            <button class="btn btn-ec-sub action-edit-cancel" type="button">{{ 'admin.common.cancel'|trans }}</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                            </td>
+                                            <td class="align-middle">
+                                                <div class="col-auto text-right">
+                                                    <a class="btn btn-ec-actionIcon mr-2" data-tooltip="true" data-placement="top" title="{{ 'admin.common.edit'|trans }}" href="{{ url('malldevel_admin_apply_edit', { id: Apply.id })}}">
+                                                        <i class="fa fa-pencil fa-lg text-secondary"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="row justify-content-md-center mb-4">
+                            {% if pagination.totalItemCount > 0 %}
+                                {% include "@admin/pager.twig" with { 'pages' : pagination.paginationData, 'routes' : 'malldevel_admin_apply_list_page' } %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="delete-modal" tabindex="-1"
+     role="dialog"
+     aria-labelledby="localPluginDeleteModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title font-weight-bold">{{ 'malldevel.admin.shop.delete.confirm_title'|trans }}</h5>
+                <button class="close" type="button"
+                        data-dismiss="modal"
+                        aria-label="Close"><span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body text-left">
+                <p class="text-left">
+                    </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ec-sub" type="button"
+                        data-dismiss="modal">{{ 'admin.common.cancel'|trans }}
+                </button>
+                <a href="#" {{ csrf_token_for_anchor() }}
+                   class="btn btn-ec-delete"
+                   data-confirm="false"
+                   data-method="delete">
+                    {{ 'admin.common.delete'|trans }}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

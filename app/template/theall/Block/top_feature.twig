@@ -1,0 +1,17 @@
+<section class="feature">
+<div class="container">
+  <div class="balloon-ttl">
+    <h3>FEATURE<span>特集</span></h3>
+  </div>
+  <div class="feature__list">
+  {% set VisibleFeatures = repository('Customize\\Entity\\Feature').getShownList() %}
+  {% for VisibleFeature in VisibleFeatures %}
+    <div class="feature__list__item">
+      <a href="{{ url('malldevel_front_feature_detail', {id: VisibleFeature.id}) }}">
+        <div class="img"><img src="{{ asset(VisibleFeature.ThumbnailPath|no_image_product, 'save_image') }}" alt=""></div>
+      </a>
+    </div>
+  {% endfor %}
+  </div>
+</div>
+</section>

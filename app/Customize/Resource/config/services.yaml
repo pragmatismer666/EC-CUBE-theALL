@@ -1,0 +1,54 @@
+imports:
+    - resource: config.yaml
+services:
+    malldevel.shop.service:
+        public: true
+        class: Customize\Services\ShopService
+        arguments:
+            - '@service_container'
+            - '@Eccube\Common\EccubeConfig'
+    malldevel.front.service:
+        public: true
+        class: Customize\Services\FrontService
+        arguments:
+            - '@Customize\Repository\BlogRepository'
+    malldevel.service.admin.auth:
+        public: true
+        class: Customize\Services\AuthService
+        arguments:
+            - '@service_container'
+            - '@Eccube\Common\EccubeConfig'
+            - '@security.token_storage'
+    malldevel.stripe.service:
+        public: true
+        class: Customize\Services\StripeService
+        arguments:
+            - '@service_container'
+            - '@Symfony\Component\Routing\RouterInterface'
+    malldevel.email.service:
+        public: true
+        class: Customize\Services\MailService
+        arguments:
+            - '@service_container'
+            - '@swiftmailer.mailer.default'
+            - '@Eccube\Repository\MailTemplateRepository'
+            - '@Eccube\Repository\MailHistoryRepository'
+            - '@Eccube\Repository\BaseInfoRepository'
+            - '@Symfony\Component\EventDispatcher\EventDispatcherInterface'
+            - '@twig'
+            - '@Eccube\Common\EccubeConfig'
+    malldevel.service.customer_history:
+        public: true
+        class: Customize\Services\CustomerHistoryService
+        arguments:
+          - '@session'
+          - '@security.token_storage'
+          - '@Customize\Repository\ProductCustomerHistoryRepository'
+          - '@Customize\Repository\ShopCustomerHistoryRepository'
+          - '@Eccube\Common\EccubeConfig'
+          - '@doctrine.orm.default_entity_manager'
+parameters:
+    malldevel.display_blog_count: 5
+    malldevel.display_new_product_count: 15
+    malldevel.series.detail.product_count: 12
+    malldevel.customer_history.max: 7

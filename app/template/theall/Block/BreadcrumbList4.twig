@@ -1,0 +1,448 @@
+<!--{
+This file is part of the BreadcrumbList3-plugin package.
+
+(c) Nobuhiko Kimoto All Rights Reserved.
+
+For the full copyright and license information, please view the LICENSE
+file that was distributed with this source code.
+}-->
+
+<style type="text/css">
+.breadcrumb {
+  padding: 8px 15px;
+  margin-bottom: 24px;
+  list-style: none;
+  background-color: #f5f5f5;
+  border-radius: 2px;
+}
+.breadcrumb > li {
+  display: inline-block;
+}
+.breadcrumb > li + li:before {
+  padding: 0 5px;
+  color: #ccc;
+  content: "/ ";
+}
+.breadcrumb > .active {
+  color: #777;
+}
+</style>
+
+{% set cur_path = path(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')) %}
+
+<ol class="breadcrumb" itemscope itemtype="https://schema.org/BreadcrumbList">
+    <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="{{ url('homepage') }}">
+            <span itemprop="name">HOME</span>
+        </a>
+        <meta itemprop="position" content="1">
+    </li>
+    {% set position = 2 %}
+    {% if cur_path starts with '/shops' %}
+
+        {% set cur_path = cur_path|slice(6) %}
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+            <a itemprop="item" href="{{ url('malldevel_front_shop_list') }}">
+                <span itemprop="name">{{ "malldevel.shop.list"|trans }}</span>
+            </a>
+            <meta itemprop="position" content="{{ position }}">
+        </li>
+
+        {% if cur_path matches '{^/detail/\\d+$}' %}
+            {% set position = position + 1 %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="javascript: void(0);">
+                    <span itemprop="name">{{ "malldevel.shop.detail"|trans }}</span>
+                </a>
+                <meta itemprop="position" content="{{ position }}">
+            </li>
+        {% elseif cur_path matches '{^/transaction_law/\\d+$}' %}
+            {% set position = position + 1 %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="javascript: void(0);">
+                    <span itemprop="name">{{ "malldevel.shop.detail"|trans }}</span>
+                </a>
+                <meta itemprop="position" content="{{ position }}">
+            </li>
+            {% set position = position + 1 %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="javascript: void(0);">
+                    <span itemprop="name">{{ "malldevel.shop.transaction_law"|trans }}</span>
+                </a>
+                <meta itemprop="position" content="{{ position }}">
+            </li>
+        {% endif %}
+
+    {% elseif cur_path starts with '/help' %}
+        {% set cur_path = cur_path|slice(5) %}
+
+        {% if cur_path starts with '/terms' %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="javascript: void(0);">
+                    <span itemprop="name">利用規約</span>
+                </a>
+                <meta itemprop="position" content="{{ position }}">
+            </li>
+        {% elseif cur_path starts with '/company' %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="javascript: void(0);">
+                    <span itemprop="name">会社概要</span>
+                </a>
+                <meta itemprop="position" content="{{ position }}">
+            </li>
+        {% elseif cur_path starts with '/dealer' %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="javascript: void(0);">
+                    <span itemprop="name">小売店・製造販売業者の皆様へ</span>
+                </a>
+                <meta itemprop="position" content="{{ position }}">
+            </li>
+        {% elseif cur_path starts with '/id-term' %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="javascript: void(0);">
+                    <span itemprop="name">ID規約</span>
+                </a>
+                <meta itemprop="position" content="{{ position }}">
+            </li>
+        {% elseif cur_path starts with '/privacy' %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="javascript: void(0);">
+                    <span itemprop="name">プライバシーポリシー</span>
+                </a>
+                <meta itemprop="position" content="{{ position }}">
+            </li>
+        {% elseif cur_path starts with '/tokusho' %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="javascript: void(0);">
+                    <span itemprop="name">特定商取引法に基づく表示について</span>
+                </a>
+                <meta itemprop="position" content="{{ position }}">
+            </li>
+        {% endif %}
+    {% elseif cur_path starts with '/contact' %}
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+            <a itemprop="item" href="javascript: void(0);">
+                <span itemprop="name">お問い合わせ</span>
+            </a>
+            <meta itemprop="position" content="{{ position }}">
+        </li>
+    {% elseif cur_path starts with '/shop-blog' %}
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+            <a itemprop="item" href="{{ url('malldevel_front_shop_list') }}">
+                <span itemprop="name">{{ "malldevel.shop.list"|trans }}</span>
+            </a>
+            <meta itemprop="position" content="{{ position }}">
+        </li>
+        {% set position = position + 1 %}
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+            <a itemprop="item" href="javascript: void(0);">
+                <span itemprop="name">{{ "malldevel.shop.detail"|trans }}</span>
+            </a>
+            <meta itemprop="position" content="{{ position }}">
+        </li>
+        {% set position = position + 1 %}
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+            <a itemprop="item" href="javascript: void(0);">
+                <span itemprop="name">{{ "malldevel.content.shop_blog"|trans }}</span>
+            </a>
+            <meta itemprop="position" content="{{ position }}">
+        </li>
+    {% elseif cur_path starts with '/category' %}
+        {% set cur_path = cur_path|slice(9) %}
+
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+            <a itemprop="item" href="{{ url('malldevel_front_category') }}">
+                <span itemprop="name">{{ "malldevel.category.list"|trans }}</span>
+            </a>
+            <meta itemprop="position" content="{{ position }}">
+        </li>
+
+        {% set position = position + 1 %}
+    {% elseif cur_path starts with '/products' %}
+        {% set cur_path = cur_path|slice(9) %}
+
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+            <a itemprop="item" href="{{ url('product_list') }}">
+                <span itemprop="name">{{ "malldevel.product.list"|trans }}</span>
+            </a>
+            <meta itemprop="position" content="{{ position }}">
+        </li>
+
+        {% set position = position + 1 %}
+
+        {% if cur_path starts with '/detail' %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="javascript:void(0)">
+                    <span itemprop="name">{{ "malldevel.product.detail"|trans }}</span>
+                </a>
+                <meta itemprop="position" content="{{ position }}">
+            </li>
+        {% endif %}
+    {% elseif cur_path starts with '/mypage' %}
+        {% set cur_path = cur_path|slice(7) %}
+
+        {% if cur_path starts with '/login' %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="javascript:void(0)">
+                    <span itemprop="name">{{ "common.login"|trans }}</span>
+                </a>
+                <meta itemprop="position" content="{{ position }}">
+            </li>
+        {% else %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="{{ url('mypage') }}">
+                    <span itemprop="name">{{ "マイページ"|trans }}</span>
+                </a>
+                <meta itemprop="position" content="{{ position }}">
+            </li>
+
+            {% set position = position + 1 %}
+
+            {% if cur_path starts with '/favorite' %}
+                <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <a itemprop="item" href="{{ url('mypage_favorite') }}">
+                        <span itemprop="name">{{ "お気に入り一覧"|trans }}</span>
+                    </a>
+                    <meta itemprop="position" content="{{ position }}">
+                </li>
+            {% elseif cur_path starts with '/change' %}
+                <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <a itemprop="item" href="{{ url('mypage_change') }}">
+                        <span itemprop="name">{{ "会員情報編集"|trans }}</span>
+                    </a>
+                    <meta itemprop="position" content="{{ position }}">
+                </li>
+            {% elseif cur_path starts with '/delivery' %}
+                <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <a itemprop="item" href="{{ url('mypage_delivery') }}">
+                        <span itemprop="name">{{ "お届け先一覧"|trans }}</span>
+                    </a>
+                    <meta itemprop="position" content="{{ position }}">
+                </li>
+            {% elseif cur_path starts with '/withdraw' %}
+                <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <a itemprop="item" href="{{ url('mypage_withdraw') }}">
+                        <span itemprop="name">{{ "退会手続き"|trans }}</span>
+                    </a>
+                    <meta itemprop="position" content="{{ position }}">
+                </li>
+            {% else %}
+                <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <a itemprop="item" href="javascript: void(0);">
+                        <span itemprop="name">{{ "ご注文履歴"|trans }}</span>
+                    </a>
+                    <meta itemprop="position" content="{{ position }}">
+                </li>
+            {% endif %}
+        {% endif %}
+
+    {% elseif cur_path starts with '/entry' %}
+        {% set cur_path = cur_path|slice(6) %}
+
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+            <a itemprop="item" href="{{ url('entry') }}">
+                <span itemprop="name">{{ "front.entry.title"|trans }}</span>
+            </a>
+            <meta itemprop="position" content="{{ position }}">
+        </li>
+
+        {% set position = position + 1 %}
+
+        {% if cur_path starts with '/activate' %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="javascript: void(0);">
+                    <span itemprop="name">{{ '新規会員登録(完了)'|trans }}</span>
+                </a>
+                <meta itemprop="position" content="{{ position }}">
+            </li>
+        {% elseif cur_path starts with '/confirm' %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="javascript: void(0);">
+                    <span itemprop="name">{{ '新規会員登録(確認)'|trans }}</span>
+                </a>
+                <meta itemprop="position" content="{{ position }}">
+            </li>
+        {% elseif cur_path starts with '/complete' %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="javascript: void(0);">
+                    <span itemprop="name">{{ '新規会員登録(仮登録完了)'|trans }}</span>
+                </a>
+                <meta itemprop="position" content="{{ position }}">
+            </li>
+        {% endif %}
+    {% elseif cur_path starts with '/forgot' %}
+        {% set cur_path = cur_path|slice(7) %}
+
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+            <a itemprop="item" href="{{ url('forgot') }}">
+                <span itemprop="name">{{ "front.forgot.title"|trans }}</span>
+            </a>
+            <meta itemprop="position" content="{{ position }}">
+        </li>
+
+        {% set position = position + 1 %}
+
+        {% if cur_path starts with '/reset' %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="javascript: void(0);">
+                    <span itemprop="name">{{ "front.forgot.reset_title"|trans }}</span>
+                </a>
+                <meta itemprop="position" content="{{ position }}">
+            </li>
+        {% elseif cur_path starts with '/complete' %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="javascript: void(0);">
+                    <span itemprop="name">{{ "front.forgot.complete_title"|trans }}</span>
+                </a>
+                <meta itemprop="position" content="{{ position }}">
+            </li>
+        {% endif %}
+    {% elseif cur_path starts with '/cart' %}
+        {% set cur_path = cur_path|slice(5) %}
+
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+            <a itemprop="item" href="javascript:void(0)">
+                <span itemprop="name">{{ "front.cart.title"|trans }}</span>
+            </a>
+            <meta itemprop="position" content="{{ position }}">
+        </li>
+    {% elseif cur_path starts with '/shopping' %}
+        {% set cur_path = cur_path|slice(9) %}
+
+        {% if cur_path starts with '/login' %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="javascript:void(0)">
+                    <span itemprop="name">{{ "common.login"|trans }}</span>
+                </a>
+                <meta itemprop="position" content="{{ position }}">
+            </li>
+        {% else %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="{{ url('shopping') }}">
+                    <span itemprop="name">{{ "front.shopping.title"|trans }}</span>
+                </a>
+                <meta itemprop="position" content="{{ position }}">
+            </li>
+
+            {% set position = position + 1 %}
+
+            {% if cur_path starts with '/confirm' %}
+                <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <a itemprop="item" href="javascript: void(0);">
+                        <span itemprop="name">{{ "front.shopping.confirm_title"|trans }}</span>
+                    </a>
+                    <meta itemprop="position" content="{{ position }}">
+                </li>
+            {% elseif cur_path starts with '/shipping_multiple' %}
+                <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <a itemprop="item" href="{{ url('shopping_shipping_multiple') }}">
+                        <span itemprop="name">{{ "front.shopping.shipping_multiple_title"|trans }}</span>
+                    </a>
+                    <meta itemprop="position" content="{{ position }}">
+                </li>
+            {% elseif cur_path starts with '/payment' %}
+                <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <a itemprop="item" href="javascript: history.back();">
+                        <span itemprop="name">{{ "front.shopping.confirm_title"|trans }}</span>
+                    </a>
+                    <meta itemprop="position" content="{{ position }}">
+                </li>
+
+                {% set position = position + 1 %}
+
+                <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <a itemprop="item" href="javascript: void(0);">
+                        <span itemprop="name">{{ "支払い"|trans }}</span>
+                    </a>
+                    <meta itemprop="position" content="{{ position }}">
+                </li>
+            {% elseif cur_path starts with '/complete' %}
+                <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <a itemprop="item" href="javascript: void(0);">
+                        <span itemprop="name">{{ "front.shopping.complete_title"|trans }}</span>
+                    </a>
+                    <meta itemprop="position" content="{{ position }}">
+                </li>
+            {% elseif cur_path starts with '/error' %}
+                <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <a itemprop="item" href="javascript: void(0);">
+                        <span itemprop="name">{{ "front.shopping.error"|trans }}</span>
+                    </a>
+                    <meta itemprop="position" content="{{ position }}">
+                </li>
+            {% endif %}
+        {% endif %}
+    {% elseif cur_path starts with '/guide' %}
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+            <a itemprop="item" href="/guide">
+                <span itemprop="name">{{ "ご利用ガイド"|trans }}</span>
+            </a>
+            <meta itemprop="position" content="{{ position }}">
+        </li>
+    {% elseif cur_path starts with '/user_data' %}
+
+        {% set cur_path = cur_path|slice(10) %}
+
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+            <a itemprop="item" href="/guide">
+                <span itemprop="name">{{ "ご利用ガイド"|trans }}</span>
+            </a>
+            <meta itemprop="position" content="{{ position }}">
+        </li>
+
+        {% set position = position + 1 %}
+
+        {% if cur_path starts with '/flow' %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="/user_data/flow">
+                    <span itemprop="name">{{ "注文の流れ"|trans }}</span>
+                </a>
+                <meta itemprop="position" content="{{ position }}">
+            </li>
+        {% elseif cur_path starts with '/register' %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="/user_data/register">
+                    <span itemprop="name">{{ "会員登録について"|trans }}</span>
+                </a>
+                <meta itemprop="position" content="{{ position }}">
+            </li>
+        {% elseif cur_path starts with '/payment' %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="/user_data/payment">
+                    <span itemprop="name">{{ "支払方法について"|trans }}</span>
+                </a>
+                <meta itemprop="position" content="{{ position }}">
+            </li>
+        {% elseif cur_path starts with '/shipping' %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="/user_data/shipping">
+                    <span itemprop="name">{{ "送料・配送について"|trans }}</span>
+                </a>
+                <meta itemprop="position" content="{{ position }}">
+            </li>
+        {% elseif cur_path starts with '/return' %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="/user_data/return">
+                    <span itemprop="name">{{ "注文のキャンセル、返品、交換"|trans }}</span>
+                </a>
+                <meta itemprop="position" content="{{ position }}">
+            </li>
+        {% endif %}
+    {% elseif cur_path starts with '/plugin/coupon/shopping/shopping_coupon' %}
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+            <a itemprop="item" href="{{ url('shopping') }}">
+                <span itemprop="name">{{ "front.shopping.title"|trans }}</span>
+            </a>
+            <meta itemprop="position" content="{{ position }}">
+        </li>
+
+        {% set position = position + 1 %}
+
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+            <a itemprop="item" href="{{ url('plugin_coupon_shopping') }}">
+                <span itemprop="name">{{ "plugin_coupon.front.shopping_coupon.header"|trans }}</span>
+            </a>
+            <meta itemprop="position" content="{{ position }}">
+        </li>
+    {% endif %}
+</ol>

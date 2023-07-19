@@ -1,0 +1,6 @@
+twig:
+    globals:
+        auth_service: "@malldevel.service.admin.auth"
+        shop_service: "@malldevel.shop.service"
+        front_service: "@malldevel.front.service"
+        customer_history_service: "@malldevel.service.customer_history"

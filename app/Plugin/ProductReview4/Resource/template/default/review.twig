@@ -1,0 +1,231 @@
+{#
+/*
+ * This file is part of the ProductReview plugin
+ *
+ * Copyright (C) 2016 LOCKON CO.,LTD. All Rights Reserved.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+#}
+
+{% import _self as stars %}
+
+{# 星テキスト生成用マクロ #}
+{% macro stars(positive, negative) %}
+    {% set positive_stars = ["", "★", "★★", "★★★", "★★★★", "★★★★★"] %}
+    {% set negative_stars = ["", "☆", "☆☆", "☆☆☆", "☆☆☆☆", "☆☆☆☆☆"] %}
+    {{ positive_stars[positive] }}{{ negative_stars[negative] }}
+{% endmacro %}
+
+{% set positive_avg_star = ProductReviewAvg %}
+{% set nagative_avg_star = 5 - positive_avg_star %}
+
+<style type="text/css">
+
+    #product_review_area {
+        padding-bottom: 0;
+        margin-bottom: 20px;
+    }
+
+    #product_review_area h3 {
+        border-top: 1px solid #C8C8C8;
+        padding-top: 50px;
+        padding-bottom: 50px;
+    }
+
+    #product_review_area .ec-rectHeading {
+        cursor: pointer;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    #product_review_area .ec-rectHeading.is_active i {
+        transform: rotate(180deg);
+    }
+
+    #product_review_area .review_list {
+        padding-left: 0;
+    }
+
+    #product_review_area .review_list li {
+        margin-bottom: 16px;
+        text-indent: 0;
+    }
+
+    #product_review_area .review_list .review_date {
+        color: #808080;
+    }
+
+    .recommend_average {
+        color: #fdbf2d;
+        font-size: 2rem;
+    }
+
+    #product_review_area .review_list .recommend_level {
+        color: #fdbf2d;
+        font-size: 2rem;
+        letter-spacing: 3px;
+    }
+
+    #product_review_area .review_list .recommend_name {
+
+    }
+    .d-flex {
+        display: flex;
+    }
+    .flex-0 {
+        flex: 0;
+    }
+    .flex-1 {
+        flex: 1;
+    }
+    .justify-content-between {
+        justify-content: space-between;
+    }
+    .review_list {
+        list-style: none;
+        padding-left: 0;
+    }
+    .purchased-status {
+        color: #5890f0;
+        margin-left: 4px;
+        padding-left: 9px;
+        border-left: 1px solid #808080;
+    }
+    .review-comment {
+        margin-top: 10px;
+    }
+    .btn {
+        font-weight: 500;
+    }
+    .btn-default {
+        background-color: #f5f5f5;
+    }
+    .btn i {
+        color: #777777;
+    }
+    .btn.voted i {
+        color: #5890f0;
+    }
+    .vote-count {
+        margin-left: 2px;
+        padding-left: 7px;
+        border-left: 1px solid #c8c8c8;
+    }
+    .mb-2 {
+        margin-bottom: 10px;
+    }
+    .review_list li {
+        border-bottom: 1px solid #c8c8c8;
+        padding-bottom: 30px;
+    }
+    @media(max-width: 768px) {
+        h3 {
+            font-size: 18px;
+        }
+    }
+</style>
+
+<script>
+    $(function() {
+        $('#product_review_area').appendTo($('.ec-reviewRole'));
+
+        $('#product_review_area .ec-rectHeading').on('click', function() {
+            $content = $('#reviewContent');
+            if ($content.css('display') == 'none') {
+                $(this).addClass('is_active');
+                $content.addClass('is_active');
+                $content.slideDown(300);
+            } else {
+                $(this).removeClass('is_active');
+                $content.removeClass('is_active');
+                $content.slideUp(300);
+            }
+            return false;
+        });
+
+        $(".ec-productRole__price").after(`
+            <div class="ec-productRole__rating">
+                <span class="recommend_average">{{ stars.stars(positive_avg_star, nagative_avg_star) }}</span>
+            </div>
+        `);
+    });
+</script>
+
+<!--▼レビューエリア-->
+<div id="product_review_area">
+    <div class="ec-role">
+        <h3 class="text-center">{{ 'product_review.front.product_detail.title'|trans }}</h3>
+        <div id="reviewContent">
+            {% if ProductReviews %}
+                <ul class="review_list">
+                    {% for reviewIndex, ProductReview in ProductReviews %}
+                        <li>
+                            <div class="row">
+                                <div class="col-sm-12 col-md-9 col-lg-9 mb-2">
+                                    <!--星の数-->
+                                    {% set positive_star = ProductReview.recommend_level %}
+                                    {% set nagative_star = 5 - positive_star %}
+                                    <span class="recommend_level">
+                                            {{ stars.stars(positive_star, nagative_star) }}
+                                        </span>
+
+                                    <!--投稿者-->
+                                    <span class="recommend_name">
+                                            {% if ProductReview.reviewer_url %}
+                                                <a href="{{ ProductReview.reviewer_url }}"
+                                                   target="_blank">{{ 'product_review.front.product_detail.name'|trans({ '%name%': ProductReview.reviewer_name }) }}</a>
+                                            {% else %}
+                                                {{ 'product_review.front.product_detail.name'|trans({ '%name%': ProductReview.reviewer_name }) }}
+                                            {% endif %}
+                                        </span>
+                                    {% if ProductReview.purchased %}
+                                        <span class="purchased-status">{{ 'product_review.front.product_detail.purchased'|trans }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="col-sm-12 col-md-3 col-lg-3 text-right mb-2">
+                                    <!--投稿日-->
+                                    <span class="review_date">{{ ProductReview.create_date|date_day }}</span>
+                                </div>
+                            </div>
+                            <!--タイトル-->
+                            <strong class="review-title">{{ ProductReview.title }}</strong>
+
+                            <!--レビューコメント-->
+                            <p class="review-comment">{{ ProductReview.comment|nl2br }}</p>
+
+                            <div>
+                                <a class="btn btn-default btn-sm
+                                   {% if (CustomerVotes[reviewIndex] is constant('Plugin\\ProductReview4\\Entity\\VoteType::UPVOTE')) %}
+                                   voted
+                                   {% endif %}"
+                                   href="{{ url('product_review_vote', {id: ProductReview.id, vote_type: 'up'}) }}">
+                                    <i class="fa fa-thumbs-up"></i>
+                                    {{ 'product_review.front.product_detail.upvote'|trans }}
+                                    <span class="vote-count">{{ ProductReview.upvote_count }}</span>
+                                </a>
+                                <a class="btn btn-default btn-sm
+                                   {% if (CustomerVotes[reviewIndex] is constant('Plugin\\ProductReview4\\Entity\\VoteType::DOWNVOTE')) %}
+                                   voted
+                                   {% endif %}"
+                                   href="{{ url('product_review_vote', {id: ProductReview.id, vote_type: 'down'}) }}">
+                                    <i class="fa fa-thumbs-down"></i>
+                                    {{ 'product_review.front.product_detail.downvote'|trans }}
+                                    <span class="vote-count">{{ ProductReview.downvote_count }}</span>
+                                </a>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>{{ 'product_review.front.product_detail.no_review'|trans }}</p>
+            {% endif %}
+        </div>
+        <div>
+            <a href="{{ url('product_review_index', { id: Product.id }) }}"
+               class="ec-inlineBtn--action">{{ 'product_review.front.product_detail.post_review'|trans }}</a>
+        </div>
+    </div>
+</div>
+<!-- ▲レビューエリア -->

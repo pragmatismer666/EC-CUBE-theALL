@@ -1,0 +1,62 @@
+{% extends 'default_frame.twig' %}
+{% block stylesheet %}
+<style>
+.msg-wrapper {
+    min-height: 350px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.saddy-icon {
+    display: flex;
+    max-width: 100px;
+    margin-bottom: 30px;
+}
+.msg {
+    font-size: 20px;
+}
+.ec-registerRole {
+    min-height: 450px;
+}
+</style>
+{% endblock %}
+{% block javascript %} 
+<script>
+$(function() {
+    $(".ec-blockBtn--cancel").on("click", function() {
+        location.href = "/";
+    })
+})
+</script>
+{% endblock %}
+
+{% block main %}
+<div class="ec-registerRole">
+    <div class="msg-wrapper">
+        <div class="saddy-icon">
+            <img src="{{ asset('assets/img/sad-icon.png', 'user_data') }}">
+        </div>
+        <div class="msg">
+            {{ msg }}
+        </div>
+    </div>
+    {% if cancellable %}
+    <div class="ec-off1Grid">
+        <div class="ec-off1Grid__cell">
+            <form method="post" action="" novalidate class="h-adr">
+                <input type="hidden" name="apply_id" value="{{ Apply.uuid }}">
+                <div class="ec-registerRole__actions">
+                    <div class="ec-off4Grid">
+                        <div class="ec-off4Grid__cell">
+                            <button class="ec-blockBtn--action" type="submit">{{ 'キャンセル'|trans }}</button>
+                            <button class="ec-blockBtn--cancel" type="button" value="back">{{ '戻る'|trans }}</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

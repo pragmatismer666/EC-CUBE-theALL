@@ -1,0 +1,344 @@
+{% extends '@admin/default_frame.twig' %}
+
+{% set menus = ['content', 'feature'] %}
+
+{% block title %}{{ '特集'|trans }}{% endblock %}
+{% block sub_title %}{{ '特集一覧'|trans }}{% endblock %}
+
+{% form_theme searchForm '@admin/Form/bootstrap_4_layout.html.twig' %}
+
+{% block stylesheet %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
+<link rel="stylesheet" href="{{ asset('assets/css/tempusdominus-bootstrap-4.min.css', 'admin') }}">
+<style type="text/css">
+    .datepicker-days th.dow:first-child,
+    .datepicker-days td:first-child {
+        color: #f00;
+    }
+
+    .datepicker-days th.dow:last-child,
+    .datepicker-days td:last-child {
+        color: #00f;
+    }
+    .dropdown.bootstrap-select.form-control {
+        border: 1px solid #888;
+    }
+    #admin_feature_status .form-check {
+        display: inline-block;
+        margin-right: 20px;
+    }
+</style>
+
+{% endblock %}
+
+{% block javascript %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
+<script>
+$(function() {
+    var modal = $("#confirmDeleteModal");
+    var modalBody = $("#confirmDeleteModal .screen-name")
+    var modalSubmit = $("confirmDeleteModal #delete")
+
+    {# modalSubmit.on('click', function() {
+        var url = $(this).data('url')
+        
+        $.ajax({
+            url: url,
+            type: 'POST'
+        }).done(function(data) {
+            if (data.success) {
+                location.reload()
+            }
+        }).fail(function(data) {
+            alert('Delete failed.');
+        });
+    }) #}
+    $(".action-publish").on('click', function() {
+        var url = $(this).data('url')
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: {
+                action: 'show'
+            }
+        }).done(function(data) {
+            if (data.success) {
+                location.reload()
+            }
+        }).fail(function(data) {
+            alert('Feature publish failed.');
+        });
+    })
+    $('.action-hidden').on('click', function() {
+        var url = $(this).data('url')
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: {
+                action: 'hide'
+            }
+        }).done(function(data) {
+            if (data.success) {
+                location.reload();
+            }
+        }).fail(function(data) {
+            alert('Feature hidden failed.');
+        });
+    })
+    $(".action-delete").on("click", function() {
+        var desc = $(this).data("description")
+        var url = $(this).data("url")
+        modalBody.text(desc)
+        modal.modal("show");
+
+        var modalSubmit = $("#confirmDeleteModal #delete")
+        modalSubmit.off("click")
+        modalSubmit.on("click", function() {
+            $.ajax({
+                url: url,
+                type: "GET",
+            }).done(function(data) {
+                if (data.success) {
+                    location.reload();
+                }
+            }).fail(function(data) {
+                alert("Feature delete failed")
+            })
+
+        })
+    })
+
+})
+</script>
+{% endblock %}
+
+{% block main %}
+{% set ShownFeatures = repository('Customize\\Entity\\Feature').getShownList() %}
+{% if ShownFeatures|length %}
+<div class="c-outsideBlock">
+    <div class="c-outsideBlock__contents">
+        <div class="row mb-2">
+            <div class="col">
+                <h3>{{ 'malldevel.admin.feature.show_list'|trans }}</h3>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="card rounded border-0 mb-4 d-block">
+                    <div class="card-body p-0">
+                        <table class="table table-sm" id="shown-features">
+                            <thead>
+                            <tr>
+                                <th class="border-top-0 pt-2 pb-2 text-center pl-3" style="width: 30px;">
+                                    <input type="checkbox" id="toggle_check_all" name="filter" value="open">
+                                </th>
+                                <th class="border-top-0 pt-2 pb-2 text-center text-nowrap" style="width: 50px;">{{ "ID" }}</th>
+                                <th class="border-top-0 pt-2 pb-2 text-center" style="width: 150px;">{{ 'malldevel.admin.content.feature.thumbnail'|trans }}</th>
+                                <th class="border-top-0 pt-2 pb-2 text-center">{{ 'malldevel.admin.content.feature.title'|trans }}</th>
+                                {# <th class="border-top-0 pt-2 pb-2 text-center">{{ 'malldevel.common.shop'|trans }}</th> #}
+                                <th class="border-top-0 pt-2 pb-2 text-center">{{ '登録日'|trans }}</th>
+                                <th class="border-top-0 pt-2 pb-2 text-center"></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                {% for Feature in ShownFeatures %}
+                                    <tr>
+                                        <td class="align-middle text-center pl-3">
+                                            <input type="checkbox" id="feature_{{ Feature.id }}" name="ids[]" value="{{ Feature.id }}">
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            {{ Feature.id }}
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            <a href="{{ path('malldevel_admin_feature_edit', {id: Feature.id}) }}">
+                                                <img src="{{ asset(Feature.ThumbnailPath|no_image_product, 'save_image') }}" style="max-width: 50px; max-height: 50px;">
+                                            </a>
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            <a class="action-edit" href="{{ path('malldevel_admin_feature_edit', {id: Feature.id}) }}">{{ Feature.title|truncate(20) }}</a>
+                                        </td>
+                                        {# <td class="align-middle text-center">
+                                            {% if Feature.Shop %}
+                                            <a class="action-edit" href="{{ path('malldevel_front_shop_detail', {id: Feature.Shop.id}) }}" target="_blank">{{ Feature.Shop.name }}</a>
+                                            {% endif %}
+                                        </td> #}
+                                        <td class="align-middle text-center">
+                                            {{ Feature.create_date|date_min }}
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            <a class="action-hidden btn btn-ec-actionIcon" data-url="{{ url('malldevel_admin_feature_show', {id: Feature.id}) }}"><i class="fa fa-eye-slash fa-lg text-secondary" aria-hidden="true"></i></a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+<div class="c-outsideBlock">
+    <form name="search_form" id="search_form" method="POST" action="{{ url('malldevel_admin_feature') }}">
+        <div class="c-outsideBlock__contents">
+            <div class="row">
+                <div class="col-8">
+                    {{ form_widget(searchForm._token) }}
+                    <div>
+                        <label class="col-form-label" data-tooltip="true" data-placement="top" title="{{ 'tooltip.order.multi_search_label'|trans }}">{{ 'admin.order.multi_search_label'|trans }}<i class="fa fa-question-circle fa-lg ml-1"></i></label>
+                        {{ form_widget(searchForm.multi) }}
+                        {{ form_errors(searchForm.multi) }}
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-4">
+                    <div class="form-row">
+                        <div class="form-group col-12">
+                            <label class="col-form-label">{{ 'malldevel.admin.feature.status'|trans }}</label>
+                            <div id="admin_feature_status">
+                            {{ form_widget(searchForm.visible) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="form-row">
+                        <div class="form-group col-12">
+                            <label class="col-form-label">{{ 'malldevel.common.shop'|trans }}</label>
+                            <div>
+                                {{ form_widget(searchForm.Shop) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="c-outsideBlock__contents">
+            <div class="row">
+                <div class="mb-4">
+                    <div class="col-12">
+                        <button class="btn btn-ec-conversion px-5" type="submit" id="search_submit">{{ 'admin.common.search'|trans }}</button>
+                        {% if pagination %}
+                            <span class="font-weight-bold ml-2" id="search_total_count">{{ 'admin.common.search_result'|trans({"%count%":pagination.totalItemCount})|raw }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="c-contentsArea__cols">
+    <div class="c-contentsArea_primaryCol">
+        <div class="c-primaryCol">
+            
+            <div class="row justify-content-between mb-2">
+                <div class="col-6">
+                    <a id="addNew" class="btn btn-ec-regular" href="{{ url('malldevel_admin_feature_new') }}">
+                        {{ 'admin.common.create__new'|trans }}
+                    </a>
+                </div>
+                <div class="col-5 text-right">
+                    <div class="d-inline-block mr-2">
+                        <select class="custom-select" onchange="location = this.value;">
+                            {% for pageMax in pageMaxis %}
+                                <option {% if pageMax.name == page_count %} selected {% endif %}
+                                        value="{{ path('malldevel_admin_feature_page', {'page_no': 1, 'page_count': pageMax.name}) }}">
+                                    {{ 'admin.common.count'|trans({ '%count%': pageMax.name }) }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            {% if pagination and pagination.totalItemCount %}
+                <form id="form_bulk" method="POST" action="">
+                    {# {{ form_widget( form._token ) }} #}
+                    <div class="card rounded border-0 mb-4 d-block">
+                        <div class="card-body p-0">
+                            <table class="table table-sm" id="search_result">
+                                <thead>
+                                <tr>
+                                    <th class="border-top-0 pt-2 pb-2 text-center pl-3" style="width: 30px;">
+                                        <input type="checkbox" id="toggle_check_all" name="filter" value="open">
+                                    </th>
+                                    <th class="border-top-0 pt-2 pb-2 text-center text-nowrap" style="width: 50px;">{{ "ID" }}</th>
+                                    <th class="border-top-0 pt-2 pb-2 text-center" style="width: 150px;">{{ 'malldevel.admin.content.feature.thumbnail'|trans }}</th>
+                                    <th class="border-top-0 pt-2 pb-2 text-center">{{ 'malldevel.admin.content.feature.title'|trans }}</th>
+                                    {# <th class="border-top-0 pt-2 pb-2 text-center">{{ 'malldevel.common.shop'|trans }}</th> #}
+                                    <th class="border-top-0 pt-2 pb-2 text-center">{{ '登録日'|trans }}</th>
+                                    <th class="border-top-0 pt-2 pb-2 text-center">{{ '公開状態'|trans }}</th>
+                                    <th class="border-top-0 pt-2 pb-2 text-center"></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                    {% for Feature in pagination %}
+                                        <tr>
+                                            <td class="align-middle text-center pl-3">
+                                                <input type="checkbox" id="feature_{{ Feature.id }}" name="ids[]" value="{{ Feature.id }}">
+                                            </td>
+                                            <td class="align-middle text-center">
+                                                {{ Feature.id }}
+                                            </td>
+                                            <td class="align-middle text-center">
+                                                <a href="{{ path('malldevel_admin_feature_edit', {id: Feature.id}) }}">
+                                                    <img src="{{ asset(Feature.ThumbnailPath|no_image_product, 'save_image') }}" style="max-width: 50px; max-height: 50px;">
+                                                </a>
+                                            </td>
+                                            <td class="align-middle text-center">
+                                                <a class="action-edit" href="{{ path('malldevel_admin_feature_edit', {id: Feature.id}) }}">{{ Feature.title|truncate(20) }}</a>
+                                            </td>
+                                            {# <td class="align-middle text-center">
+                                                {% if Feature.Shop %}
+                                                <a class="action-edit" href="{{ path('malldevel_front_shop_detail', {id: Feature.Shop.id}) }}" target="_blank">{{ Feature.Shop.name }}</a>
+                                                {% endif %}
+                                            </td> #}
+                                            <td class="align-middle text-center">
+                                                {{ Feature.create_date|date_min }}
+                                            </td>
+                                            <td class="align-middle text-center">
+                                                <a class="action-publish btn btn-ec-actionIcon {% if Feature.visible == true %}disabled{% else %}{% endif %}"
+                                                    data-url="{{ url('malldevel_admin_feature_show', {id: Feature.id}) }}"><i class="fa fa-eye fa-lg text-secondary" aria-hidden="true"></i></a>
+                                            </td>
+                                            <td class="align-middle text-center">
+                                                <a class="action-delete btn btn-ec-actionIcon {% if Feature.visible == true %}disabled{% endif %}"
+                                                    data-action="delete"
+                                                    data-url="{{ path('malldevel_admin_feature_delete', {id: Feature.id}) }}"
+                                                    data-description="{{ 'malldevel.admin.feature.delete__confirm_message'|trans }}">
+                                                    <i class="fa fa-close fa-lg text-secondary"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog"
+        aria-labelledby="confirmDeleteModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ 'malldevel.admin.feature.delete__confirm_title'|trans }}</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="screen-name"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ec-sub" type="button" data-dismiss="modal">{{ 'admin.common.cancel'|trans }}</button>
+                <button class="btn btn-ec-delete" type="button" id="delete">{{ 'admin.common.delete' | trans }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

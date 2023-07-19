@@ -1,0 +1,104 @@
+{% extends 'default_frame.twig' %}
+
+{% set container_class = 'tokusho' %}
+
+{% block main %}
+    <h1>特定商取引法に基づく表示について</h1>
+    <div class="tokusho__table">
+        <table>
+            <tbody><tr>
+                <th>販売主</th>
+                <td>
+                    <table>
+                        <tbody>
+                        <tr>
+                            <td>【名称】</td>
+                            <td>{{ Shop.name }} </td>
+                        </tr>
+                        <tr>
+                            <td>【住所】</td>
+                            <td>{{ Shop.Address }}</td>
+                        </tr>
+                        <tr>
+                            <td>【責任者】</td>
+                            <td>{{ Shop.representative }}</td>
+                        </tr>
+                        <tr>
+                            <td>【連絡先】</td>
+                            <td>{{ Shop.contact }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                            ただし、THE ALLへのお問い合わせについては、support@theall.comへメールでお問い合わせください。
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <th>商品の価格</th>
+                <td>
+                    商品ごとに表示
+                </td>
+            </tr>
+            {% if Shop.Tokusho %}
+            <tr>
+                <th>商品の配送について</th>
+                <td>
+                    {{ Shop.Tokusho.delivery }}<br />
+                    {% if Shop.DeliveryFreeAmount %}
+                        <br />購入金額合計が {{ Shop.DeliveryFreeAmount|price }} 以上で送料無料
+                    {% endif %}
+                    {% if Shop.DeliveryFreeQuantity %}
+                        <br />購入数量合計が {{ Shop.DeliveryFreeQuantity}} 以上で送料無料
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th>商品の引渡時期</th>
+                <td>{{ Shop.Tokusho.delivery_time }}</td>
+            </tr>
+            <tr>
+                <th>領収書発行について</th>
+                <td>{{ Shop.Tokusho.receipt }}</td>
+            </tr>
+            <tr>
+                <th>支払方法</th>
+                <td>
+                    {% if Shop.Tokusho.payment_method is not empty %}
+                        {{ Shop.Tokusho.payment_method }}
+                    {% else %}
+                        運営側と同じ
+                    {% endif %}
+                </td>
+            </tr>
+            {% endif %}
+            <tr>
+                <th>支払期限</th>
+                <td>
+                    【クレジットカード】<br>運営側と同じ<br><br>
+                    【銀行振込】<br> 前払いでお支払いください。 ショップ毎の対応を記入　（振込手数料は購入者負担でお願いします。）
+                </td>
+            </tr>
+            <tr>
+                <th>商品代金以外の必要金額</th>
+                <td>
+                    ・送料<br> ・振込手数料<br> ・返品手数料<br> ・消費税
+                </td>
+            </tr>
+            {% if Shop.Tokusho %}
+            <tr>
+                <th>注文商品の<br>キャンセル・返品・交換</th>
+                <td>
+                    {{ Shop.Tokusho.rcx_overview }}<br><br>
+                    【キャンセル】<br>{{ Shop.Tokusho.cancel }}<br><br>
+                    【返品】 <br>{{ Shop.Tokusho.refund }}<br><br>
+                    【交換】<br>{{ Shop.Tokusho.exchange }}<br>
+                </td>
+            </tr>
+            {% endif %}
+            
+            </tbody></table>
+    </div>
+{% endblock %}

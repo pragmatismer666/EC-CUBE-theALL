@@ -1,0 +1,24 @@
+{#
+* Plugin Name : CustomerRank
+*
+* Copyright (C) BraTech Co., Ltd. All Rights Reserved.
+* http://www.bratech.co.jp/
+*
+* For the full copyright and license information, please view the LICENSE
+* file that was distributed with this source code.
+#}
+
+{% if CustomerRank %}
+    <p>{{ CustomerRank.name }}{{ 'customerrank.common.customer_price'|trans }}</p>
+    <p class="customer_rank_price_default" id="customer_rank_price_default">
+        {% if Product.hasProductClass %}
+            {% if Product.getCustomerRankPriceMin(CustomerRank.id) == Product.getCustomerRankPriceMax(CustomerRank.id) %}
+                {{ Product.getCustomerRankPriceIncTaxMin(CustomerRank.id)|price }}
+            {% else %}
+                {{ Product.getCustomerRankPriceIncTaxMin(CustomerRank.id)|price }} ～ {{ Product.getCustomerRankPriceIncTaxMax(CustomerRank.id)|price }}
+            {% endif %}
+        {% else %}
+            {{ Product.getCustomerRankPriceIncTaxMin(CustomerRank.id)|price }}
+        {% endif %}
+    </p>
+{% endif %}

@@ -1,0 +1,68 @@
+{% extends 'default_frame.twig' %}
+
+{% set container_class = 'company' %}
+
+{% block main %}
+    <h1>会社概要</h1>
+    <p>ダイレクトショップモールTHE ALLは、ＴＳＰＣ株式会社が事業者、株式会社ジ・オールがサイト運営を行っています。</p>
+    <div class="company__table">
+        <div>
+            <p><img src="{{asset('assets/img/tspc.jpg')}}" alt="logo" width=80> ＴＳＰＣ株式会社</p>
+            <table>
+                <tr>
+                    <th>会社名</th>
+                    <td>ＴＳＰＣ株式会社</td>
+                </tr>
+                <tr>
+                    <th>住所</th>
+                    <td>〒668-0047　兵庫県豊岡市三坂町4-3</td>
+                </tr>
+                <tr>
+                    <th>設立</th>
+                    <td>平成３１年４月</td>
+                </tr>
+                <tr>
+                    <th>TEL</th>
+                    <td>0796-34-6033</td>
+                </tr>
+                <tr>
+                    <th>FAX</th>
+                    <td>0796-24-2438</td>
+                </tr>
+                <tr>
+                    <th>Mail</th>
+                    <td>info@tspc.co.jp</td>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <p><img src="{{asset('assets/img/theall-logo.png')}}" alt="logo" width=115> 株式会社ジ・オール</p>
+            <table>
+                <tr>
+                    <th>会社名</th>
+                    <td>株式会社ジ・オール</td>
+                </tr>
+                <tr>
+                    <th>住所</th>
+                    <td>〒668-0069 兵庫県豊岡市正法寺４６３－２３</td>
+                </tr>
+                <tr>
+                    <th>設立</th>
+                    <td>令和３年２月</td>
+                </tr>
+                <tr>
+                    <th>TEL</th>
+                    <td>0796-34-9088</td>
+                </tr>
+                <tr>
+                    <th>FAX</th>
+                    <td>0796-24-2438</td>
+                </tr>
+                <tr>
+                    <th>Mail</th>
+                    <td>info@the-all.co.jp</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+{% endblock %}

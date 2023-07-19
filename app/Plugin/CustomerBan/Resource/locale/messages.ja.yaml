@@ -1,0 +1,12 @@
+customer_ban.admin.master.title: 不正顧客管理
+customer_ban.admin.master.subtitle: 会員管理
+customer_ban.admin.ban: 不正顧客
+customer_ban.admin.unban: 不正顧客解除
+customer_ban.admin.ban.success: 不正顧客を登録しました。
+customer_ban.admin.ban.error: 不正顧客を解除しました。
+customer_ban.admin.ban_modal__title: 不正顧客登録
+customer_ban.admin.ban_modal__message: 本当に顧客「%name%」を不正客様に登録しますか？
+customer_ban.admin.unban.success: 不正顧客リストから削除しました。
+customer_ban.admin.unban_modal__title: 不正顧客解除
+customer_ban.admin.unban_modal__message: 本当に不正顧客「%name%」を解除したいですか？
+customer_ban.front.ban_alert: あなたのアカウントは不正顧客になっています。

@@ -1,0 +1,20 @@
+a.no-hover-style{
+  &:hover{
+    text-decoration: none;;
+  }
+}
+
+.text-underline{
+  text-decoration: underline;
+}
+
+.table-style-info{
+  margin: 10px 0;
+  label.label{
+    vertical-align: top;
+    width: 138px;
+  }
+  label.data{
+    max-width: calc(100% - 145px);
+  }
+}

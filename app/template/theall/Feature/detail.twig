@@ -1,0 +1,248 @@
+{% extends 'default_frame.twig' %}
+
+{% block stylesheet %}
+<style>
+.ec-shelfGrid .ec-shelfGrid__item {
+    margin-right: 0;
+}
+.ec-shelfGrid__item .img img {
+    width: 100%;
+    object-fit: cover;
+    height: 140px;
+}
+@media only screen and (max-width: 992px) {
+    .ec-shelfGrid__item .img img {
+        height: 80px;
+    }
+}
+@media only screen and (max-width: 768px) {
+    .ec-shelfGrid__item .img img {
+        height: calc(25vw - 10px);
+    }
+}
+@media only screen and (min-width: 768px) {
+    .ec-shelfGrid .ec-shelfGrid__item {
+        width: 33.33%;
+    }
+
+}
+.ec-topicpath__divider {
+    margin-bottom: 0!important;
+}
+.ec-topicpath__item--active {
+    margin-bottom: 0!important;
+}
+.ec-topicpath__item > a, .ec-topicpath__item--active > a {
+    color: #333333!important;
+}
+.ec-searchnavRole {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.feature-detail-thumbnail img {
+    width: 100%;
+}
+.feature-detail-description {
+    margin-bottom: 50px;
+}
+</style>
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        eccube.productsClassCategories = {
+            {% for FeatureProduct in pagination %}
+                {% set Product = FeatureProduct.Product %}
+                "{{ Product.id|escape('js') }}": {{ class_categories_as_json(Product)|raw }}{% if loop.last == false %}, {% endif %}
+            {% endfor %}
+        };
+
+        $(function() {
+
+            // 表示件数を変更
+            $('.disp-number').change(function() {
+                var dispNumber = $(this).val();
+                $('#disp_number').val(dispNumber);
+                $('#pageno').val(1);
+                $("#form1").submit();
+            });
+
+            // 並び順を変更
+            $('.order-by').change(function() {
+                var orderBy = $(this).val();
+                $('#orderby').val(orderBy);
+                $('#pageno').val(1);
+                $("#form1").submit();
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block main %}
+<div class="feature-detail-thumbnail">
+    <img src="{{ asset(Feature.ThumbnailPath|no_image_product, 'save_image') }}">
+</div>
+<div class="feature-detail-title">
+    <h2>{{ Feature.title }}</h2>
+</div>
+<div class="feature-detail-description">
+{{ Feature.content|raw }}
+</div>
+{% if Feature.FeatureShops|length %}
+{% for FeatureShop in Feature.FeatureShops %}
+    {% set Shop = FeatureShop.Shop %}
+<section class="feature-shop" style="margin-bottom: 30px;">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="img">
+            <img src="{{ asset(Shop.LogoPath|no_image_product, 'save_image') }}" alt="ロゴ画像">
+            </div>
+        </div>
+        <div class="col-md-9">
+            <h4>{{ Shop.name}}</h4>
+            <div class="feature-shop-desc">
+            {% autoescape false %}
+            {{ Shop.hp|raw|striptags|truncate(60) }}
+            {% endautoescape %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endfor %}
+{% endif %}
+<section class="feature-product">
+    <div class="ec-searchnavRole">
+        <form name="form1" id="form1" method="get" action="?">
+            <input type="hidden" id="pageno" name="pageno">
+            <input type="hidden" id="disp_number" name="disp_number">
+        </form>
+        <div class="ec-searchnavRole__topicpath">
+            <ol class="ec-topicpath">
+                <li class="ec-topicpath__item"><a href="{{ url('product_list') }}">{{ '全て'|trans }}</a>
+                </li>
+                <li class="ec-topicpath__divider">|</li>
+                <li class="ec-topicpath__item--active"><a href="#">{{ Feature.title|truncate(10) }}</a></li>
+            </ol>
+        </div>
+        <div class="ec-searchnavRole__infos">
+            <div class="ec-searchnavRole__counter">
+                {% if pagination.totalItemCount > 0 %}
+                    {{ '<span class="ec-font-bold">%count%件</span><span>の商品が見つかりました</span>'|trans({ '%count%': pagination.totalItemCount })|raw }}
+                {% else %}
+                    <span>{{ 'お探しの商品は見つかりませんでした'|trans }}</span>
+                {% endif %}
+            </div>
+            {% if pagination.totalItemCount > 0 %}
+                <div class="ec-searchnavRole__actions">
+                    <div class="ec-select">
+                        {{ form_widget(disp_number_form, {'id': '', 'attr': {'class': 'disp-number'}}) }}
+                        {{ form_widget(order_by_form, {'id': '', 'attr': {'class': 'order-by'}}) }}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% if pagination.totalItemCount > 0 %}
+        <div class="ec-shelfRole">
+            <ul class="ec-shelfGrid item-list">
+                {% for FeatureProduct in pagination %}
+                    {% set Product = FeatureProduct.Product %}
+                    <li class="ec-shelfGrid__item item-list__item">
+                        <a href="{{ url('product_detail', {'id': Product.id}) }}">
+                            <div class="img"><img src="{{ asset(Product.main_list_image|no_image_product, 'save_image') }}"></div>
+                            <h4 class="title">{{ Product.Shop.name|default(Product.name) }}</h4>
+                            <p>{{ Product.name }}</p>
+                            <p class="price02-default price">
+                                {% if Product.hasProductClass %}
+                                    {% if Product.getPrice02Min == Product.getPrice02Max %}
+                                        {{ Product.getPrice02IncTaxMin|price }}
+                                    {% else %}
+                                        {{ Product.getPrice02IncTaxMin|price }} ～ {{ Product.getPrice02IncTaxMax|price }}
+                                    {% endif %}
+                                {% else %}
+                                    {{ Product.getPrice02IncTaxMin|price }}
+                                {% endif %}
+                            </p>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="ec-pagerRole">
+            {# {% include "pager.twig" with {'pages': pagination.paginationData} %} #}
+            {% set pages = pagination.paginationData %}
+            {% if pages.pageCount > 1 %}
+                <div class="pagination">
+                    {# 最初へ #}
+                    {% if pages.firstPageInRange != 1 %}
+                        {# <li class="ec-pager__item"> #}
+                            <a class="prev" href="{{ path(
+                                app.request.attributes.get('_route'),
+                                app.request.query.all|merge({'pageno': pages.first, 'id' : Feature.id })) }}">{{ '最初へ'|trans }}</a>
+                        {# </li> #}
+
+                    {% endif %}
+
+                    {# 前へ #}
+                    {% if pages.previous is defined %}
+                        {# <li class="ec-pager__item"> #}
+                            <a class="prev" href="{{ path(
+                                app.request.attributes.get('_route'),
+                                app.request.query.all|merge({'pageno': pages.previous, 'id' : Feature.id })) }}">{{ '前へ'|trans }}</a>
+                        {# </li> #}
+                    {% endif %}
+
+                    {# 1ページリンクが表示されない場合、「...」を表示 #}
+                    {% if pages.firstPageInRange != 1 %}
+                        {# <li class="ec-pager__item"> #}
+                        ...
+                        {# </li> #}
+                    {% endif %}
+
+                    {% for page in pages.pagesInRange %}
+                        {% if page == pages.current %}
+                            {# <li class="ec-pager__item--active"> #}
+                                <span>{{ page }}</span>
+                            {# </li> #}
+                        {% else %}
+                            {# <li class="ec-pager__item"> #}
+                                <a href="{{ path(
+                                    app.request.attributes.get('_route'),
+                                    app.request.query.all|merge({'pageno': page, 'id' : Feature.id })) }}"> {{ page }} </a>
+                            {# </li> #}
+                        {% endif %}
+                    {% endfor %}
+
+                    {# 最終ページリンクが表示されない場合、「...」を表示 #}
+                    {% if pages.last != pages.lastPageInRange %}
+                        {# <li class="ec-pager__item"> #}
+                        ...
+                        {# </li> #}
+                    {% endif %}
+
+                    {# 次へ #}
+                    {% if pages.next is defined %}
+                        {# <li class="ec-pager__item"> #}
+                            <a class="next" href="{{ path(
+                            app.request.attributes.get('_route'),
+                            app.request.query.all|merge({'pageno': pages.next, 'id' : Feature.id })) }}">{{ '次へ'|trans }}</a>
+                        {# </li> #}
+                    {% endif %}
+
+                    {# 最後へ #}
+                    {% if pages.last != pages.lastPageInRange %}
+                        {# <li class="ec-pager__item"> #}
+                            <a class="next" href="{{ path(
+                                app.request.attributes.get('_route'),
+                                app.request.query.all|merge({'pageno': pages.last, 'id' : Feature.id })) }}">{{ '最後へ'|trans }}</a>
+                        {# </li> #}
+                    {% endif %}
+                </div>
+            {% endif %}
+
+        </div>
+    {% endif %}
+
+</section>
+{% endblock %}

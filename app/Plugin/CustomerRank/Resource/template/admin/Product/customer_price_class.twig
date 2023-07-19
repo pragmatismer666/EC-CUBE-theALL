@@ -1,0 +1,69 @@
+{#
+* Plugin Name : CustomerRank
+*
+* Copyright (C) BraTech Co., Ltd. All Rights Reserved.
+* http://www.bratech.co.jp/
+*
+* For the full copyright and license information, please view the LICENSE
+* file that was distributed with this source code.
+#}
+
+{% for CustomerRank in CustomerRanks %}
+<span id="customer_price_th_{{ loop.index }}" style="display:none;">
+    {{ CustomerRank.name }}{{ 'customerrank.common.customer_price'|trans }}
+</span>
+{% endfor %}
+
+{% set index = 0 %}
+{% for product_class_form in form.product_classes %}
+{% set index = index + 1 %}
+{% for CustomerRank in CustomerRanks %}
+{% set value = 'customer_price_' ~ CustomerRank.id %}
+<div id="customer_price_{{ index }}_{{ loop.index }}" style="display:none;">
+    {{ form_widget(product_class_form[value]) }}
+    {{ form_errors(product_class_form[value]) }}
+</div>
+{% endfor %}
+{% endfor %}
+
+<script>
+    $(function() {
+        var index = 0;
+        var start = 8;
+        $('th').each(function(i) {
+            if($(this).text().match(/{{'admin.product.sale_price'|trans}}/)){
+                start = i;
+            }
+        });
+        $('table tr').each(function(i) {
+            if (i != 0) {
+                index =  start;
+                for(j=1;j<={{ CustomerRanks|length }};j++){
+                    $elem = $('#customer_price_' + i + '_' + j);
+                    $('td:eq('+index+')', this).after('<td class="align-middle">' + $elem.html() + '</td>');
+                    $elem.remove();
+                    index++;
+                }
+            } else {
+                index = start;
+                for(j=1;j<={{ CustomerRanks|length }};j++){
+                    $elem = $('#customer_price_th_' + j);
+                    $('th:eq('+index+')').after('<th class="pt-2 pb-2">' + $elem.text() + '</th>');
+                    $elem.remove();
+                    index++;
+                }
+            }
+        });
+
+        // 1行目をコピーボタン
+        $('#copy').click(function() {
+            {% for CustomerRank in CustomerRanks %}
+                var price = $('#product_class_matrix_product_classes_0_customer_price_{{ CustomerRank.id }}').val();
+                $('input[id$=_customer_price_{{ CustomerRank.id }}]').val(price);
+            {% endfor %}
+        });
+    });
+</script>
+
+
+

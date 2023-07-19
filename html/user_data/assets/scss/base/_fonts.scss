@@ -1,0 +1,292 @@
+@import 'colors';
+
+$font-family-yugothic: "游ゴシック";
+$font-family-hiragino-sans: Hiragino Sans;
+$font-style-normal: normal;
+$font-weight-bold: bold;
+$font-weight-medium: 500;
+$font-weight-normal: normal;
+$font-size-13: 13px;
+$font-size-14: 14px;
+$font-size-15: 15px;
+$font-size-16: 16px;
+$font-size-17: 17px;
+$font-size-18: 18px;
+$font-size-20: 20px;
+$font-size-22: 22px;
+$font-size-23: 23px;
+$font-size-28: 28px;
+$font-size-33: 33px;
+$font-size-50: 50px;
+$character-spacing-0: 0px;
+$line-spacing-19: 19px;
+$line-spacing-22: 22px;
+$line-spacing-23: 23px;
+$line-spacing-25: 25px;
+$line-spacing-26: 26px;
+$line-spacing-27: 27px;
+$line-spacing-28: 28px;
+$line-spacing-30: 30px;
+$line-spacing-31: 31px;
+$line-spacing-33: 33px;
+$line-spacing-34: 34px;
+$line-spacing-42: 42px;
+$line-spacing-47: 47px;
+$line-spacing-70: 70px;
+
+h1{
+  font-family: $font-family-yugothic;
+  font-style: $font-style-normal;
+  font-weight: $font-weight-bold;
+  font-size: $font-size-33;
+  line-height: $line-spacing-47;
+  letter-spacing: $character-spacing-0;
+  color: $color-141414;
+}
+
+h2{
+  font-family: $font-family-yugothic;
+  font-style: $font-style-normal;
+  font-weight: $font-weight-bold;
+  font-size: $font-size-28;
+  line-height: $line-spacing-42;
+  letter-spacing: $character-spacing-0;
+  color: $color-141414;
+}
+
+h3{
+  font-family: $font-family-yugothic;
+  font-style: $font-style-normal;
+  font-weight: $font-weight-bold;
+  font-size: $font-size-22;
+  line-height: $line-spacing-34;
+  letter-spacing: $character-spacing-0;
+  color: $color-141414;
+}
+
+h4{
+  font-family: $font-family-yugothic;
+  font-style: $font-style-normal;
+  font-weight: $font-weight-bold;
+  font-size: $font-size-18;
+  line-height: $line-spacing-28;
+  letter-spacing: $character-spacing-0;
+  color: $color-141414;
+}
+
+h5{
+  font-family: $font-family-yugothic;
+  font-style: $font-style-normal;
+  font-weight: $font-weight-bold;
+  font-size: $font-size-17;
+  line-height: $line-spacing-27;
+  letter-spacing: $character-spacing-0;
+  color: $color-141414;
+}
+
+.font-normal{
+  font-family: $font-family-yugothic;
+  font-style: $font-style-normal;
+  font-weight: $font-weight-medium;
+  font-size: $font-size-16;
+  line-height: $line-spacing-27;
+  letter-spacing: $character-spacing-0;
+  color: $color-141414;
+}
+
+.font-normal-bold{
+  font-family: $font-family-yugothic;
+  font-style: $font-style-normal;
+  font-weight: $font-weight-bold;
+  font-size: $font-size-16;
+  line-height: $line-spacing-27;
+  letter-spacing: $character-spacing-0;
+  color: $color-141414;
+}
+
+.font-goods{
+  font-family: $font-family-yugothic;
+  font-style: $font-style-normal;
+  font-weight: $font-weight-medium;
+  font-size: $font-size-15;
+  line-height: $line-spacing-23;
+  letter-spacing: $character-spacing-0;
+  color: $color-141414;
+}
+
+.font-goods-bold{
+  font-family: $font-family-yugothic;
+  font-style: $font-style-normal;
+  font-weight: $font-weight-bold;
+  font-size: $font-size-15;
+  line-height: $line-spacing-23;
+  letter-spacing: $character-spacing-0;
+  color: $color-141414;
+}
+
+.font-big{
+  font-family: $font-family-yugothic;
+  font-style: $font-style-normal;
+  font-weight: $font-weight-medium;
+  font-size: $font-size-17;
+  line-height: $line-spacing-33;
+  letter-spacing: $character-spacing-0;
+  color: $color-141414;
+}
+
+.font-small{
+  font-family: $font-family-yugothic;
+  font-style: $font-style-normal;
+  font-weight: $font-weight-medium;
+  font-size: $font-size-14;
+  line-height: $line-spacing-22;
+  letter-spacing: $character-spacing-0;
+  color: $color-141414;
+}
+
+@media (max-width: 768px) {
+  h1{
+    font-family: $font-family-hiragino-sans;
+    font-style: $font-style-normal;
+    font-weight: $font-weight-normal;
+    font-size: $font-size-23;
+    line-height: $line-spacing-31;
+    letter-spacing: $character-spacing-0;
+    color: $color-000000;
+  }
+
+  h2{
+    font-family: $font-family-hiragino-sans;
+    font-style: $font-style-normal;
+    font-weight: $font-weight-normal;
+    font-size: $font-size-20;
+    line-height: $line-spacing-30;
+    letter-spacing: $character-spacing-0;
+    color: $color-000000;
+  }
+
+  h3{
+    font-family: $font-family-hiragino-sans;
+    font-style: $font-style-normal;
+    font-weight: $font-weight-normal;
+    font-size: $font-size-18;
+    line-height: $line-spacing-26;
+    letter-spacing: $character-spacing-0;
+    color: $color-000000;
+  }
+
+  h4{
+    font-family: $font-family-hiragino-sans;
+    font-style: $font-style-normal;
+    font-weight: $font-weight-normal;
+    font-size: $font-size-16;
+    line-height: $line-spacing-26;
+    letter-spacing: $character-spacing-0;
+    color: $color-000000;
+  }
+
+  .font-normal{
+    font-family: $font-family-hiragino-sans;
+    font-style: $font-style-normal;
+    font-weight: $font-weight-normal;
+    font-size: $font-size-15;
+    line-height: $line-spacing-25;
+    letter-spacing: $character-spacing-0;
+    color: $color-000000;
+  }
+
+  .font-normal-bold{
+    font-family: $font-family-hiragino-sans;
+    font-style: $font-style-normal;
+    font-weight: $font-weight-normal;
+    font-size: $font-size-15;
+    line-height: $line-spacing-25;
+    letter-spacing: $character-spacing-0;
+    color: $color-000000;
+  }
+
+  .font-goods{
+    font-family: $font-family-hiragino-sans;
+    font-style: $font-style-normal;
+    font-weight: $font-weight-normal;
+    font-size: $font-size-13;
+    line-height: $line-spacing-19;
+    letter-spacing: $character-spacing-0;
+    color: $color-000000;
+  }
+
+  .font-goods-bold{
+    font-family: $font-family-hiragino-sans;
+    font-style: $font-style-normal;
+    font-weight: $font-weight-normal;
+    font-size: $font-size-13;
+    line-height: $line-spacing-19;
+    letter-spacing: $character-spacing-0;
+    color: $color-000000;
+  }
+}
+
+body{
+  color: $color-141414;
+  font-weight: $font-weight-medium;
+}
+
+.font-size-13{
+  font-size: $font-size-13 !important;
+}
+
+.font-size-14{
+  font-size: $font-size-14 !important;
+}
+
+.font-size-15{
+  font-size: $font-size-15 !important;
+}
+
+.font-size-18{
+  font-size: $font-size-18 !important;
+}
+
+.font-size-20{
+  font-size: $font-size-20 !important;
+}
+
+.font-size-22{
+  font-size: $font-size-22 !important;
+}
+
+.font-size-28{
+  font-size: $font-size-28 !important;
+}
+
+.font-size-33{
+  font-size: $font-size-33 !important;
+}
+
+.font-size-50{
+  font-size: $font-size-50 !important;
+}
+
+.text-black{
+  color: $color-141414 !important;
+}
+
+.text-danger {
+  color: $color-cb1569 !important;
+}
+
+.bg-black{
+  background-color: $color-141414 !important;
+}
+
+.bold-black{
+  font-family: "游ゴシック";
+  font-size: 16px;
+  font-weight: bold;
+  color: black;
+}
+
+.normal-font{
+  font-family: "游ゴシック";
+  font-size: 16px;
+}

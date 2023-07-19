@@ -1,0 +1,551 @@
+{% extends '@admin/default_frame.twig' %}
+
+{% set menus = ['content', 'feature'] %}
+
+{% block title %}{{ '特集'|trans }}{% endblock %}
+{% block sub_title %}{{ '特集登録'|trans }}{% endblock %}
+
+{% form_theme form '@admin/Form/bootstrap_4_horizontal_layout.html.twig' %}
+{% block stylesheet %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
+<style>
+.img-product-thumbnail {
+    width: 80px;
+    height: 45px;
+    object-fit: cover;
+}
+#addProductModal .modal-body .list-group{
+    max-height: 400px;
+    overflow-y: scroll;
+}
+#addProductModal .list-group-item.active {
+    background: #b5d7f9 
+}
+</style>
+{% endblock %}
+{% block javascript %}
+
+<script src="{{ asset('assets/js/vendor/fileupload/vendor/jquery.ui.widget.js', 'admin') }}"></script>
+<script src="{{ asset('assets/js/vendor/fileupload/jquery.iframe-transport.js', 'admin') }}"></script>
+<script src="{{ asset('assets/js/vendor/fileupload/jquery.fileupload.js', 'admin') }}"></script>
+<script src="{{ asset('assets/js/vendor/fileupload/jquery.fileupload-process.js', 'admin') }}"></script>
+<script src="{{ asset('assets/js/vendor/fileupload/jquery.fileupload-validate.js', 'admin') }}"></script>
+<script>var bootstrapTooltip = $.fn.tooltip.noConflict();</script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
+<script src="{{ asset('assets/vendor/ckeditor/ckeditor.js', 'admin') }}"></script>
+{{ include("@admin/assets/editor.js.twig") }}
+<script>
+    $.fn.tooltip = bootstrapTooltip;
+    {# $(document).on('drop dragover', function(e) {
+        e.preventDefault();
+    }); #}
+    
+    $(function() {
+        initCkeditor({
+            selector_id      :  "{{ form.content.vars.id }}",
+            data             :  "{{ (form.content.vars.value|raw)|json_encode() }}"
+        })
+
+        var hideThumbnail = function() {
+        if ($("#thumb div").length > 0) {
+                $("#icon_no_image").css("display", "none");
+                {# $('#message').html("{{ 'admin.common.drag_and_drop_description'|trans }}"); #}
+            } else {
+                $("#icon_no_image").css("display", "");
+                $('#message').empty();
+            }
+        }
+
+        var proto_img = '<div class="c-form__fileUploadThumbnail" style="background-image:url(\'__path__\');">' +
+                '<a class="delete-image"><i class="fa fa-times" aria-hidden="true"></i></a>' +
+                `{{ form_widget(form.thumbnail) }}` +
+                '</div>';
+        var proto_del = '{{ form_widget(form.delete_images.vars.prototype) }}';
+
+        {% if Feature.thumbnail is not null %}
+        var current_image = proto_img.replace(/__path__/g, "{{ asset(Feature.ThumbnailPath, 'save_image') }}");
+        $("#thumb").html(current_image);
+        {% endif %}
+
+        $("#malldevel_image").fileupload( {
+            url: "{{ url('malldevel_admin_image_temp_upload') }}",
+            type: "post",
+            sequentialUploads: true,
+            dataType: 'json',
+            dropZone: $('#upload-zone'),
+            done: function(e, data) {
+                $('.progress').hide();
+                if( data.result.files.length > 0) {
+                    var path = "{{ asset('', 'temp_image') }}" + data.result.files[0];
+                    $("#thumb").html(proto_img.replace(/__path__/g, path));
+                    $("#{{ form.thumbnail.vars.id }}").val(data.result.files[0]);
+                }
+                hideThumbnail();
+            },
+            fail: function(e, data) {
+                $('.progress').hide();
+                $('.progress .progress-bar').width('0%');
+            },
+            always: function(e, data) {
+                $('.progress').hide();
+                $('.progress .progress-bar').width('0%');
+            },
+            start: function(e, data) {
+                $('.progress').show();
+            },
+            acceptFileTypes: /(\.|\/)(gif|jpe?g|png)$/i,
+            maxFileSize: 10000000,
+            maxNumberOfFiles: 10,
+            progressall: function(e, data) {
+                var progress = parseInt(data.loaded / data.total * 100, 10);
+                $('.progress .progress-bar').css(
+                    'width',
+                    progress + '%'
+                );
+            },
+            processalways: function(e, data) {
+                if ( data.files.error ) {
+                    alert("{{ 'admin.common.upload_error'|trans }}")
+                }
+            }
+        });
+
+        $('#file_upload').on('click', function() {
+            $('#malldevel_image').click();
+        });
+        var count_del = 0;
+        $("#thumb").on("click", '.delete-image', function() {
+            var thumbnail = $(this).parents("div.c-form__fileUploadThumbnail");
+            var src = $(thumbnail).find("input").val();
+
+            var $new_delete_image = $(proto_del.replace(/__name__/g, count_del));
+            var thumbnail = $(this).parents('div.c-form__fileUploadThumbnail');
+            var src = $(thumbnail).find('input').val();
+            $new_delete_image.val(src);
+            $("#thumb").append($new_delete_image);
+
+            $(thumbnail).remove();
+            hideThumbnail();
+            count_del++;
+        })
+    });
+</script>
+<script>
+{# Add Relevant product #}
+$(function() {
+    var addButton = $("#addProduct")
+    var modal = $("#addProductModal")
+    var productList = $("#addProductModal .modal-body .list-group")
+    var productTable = $("#product-table tbody")
+
+{# for infinite scroll #}
+    var start = 0;
+    var limit = 5;
+
+    var shops = $("#{{ form.Shops.vars.id }}");
+    var shop_ids = shops.val();
+    
+    var reachedMax = false;
+
+{# for transfer products from modal to table #}
+    var selectProducts = [];
+    
+    addButton.on('click', function() {
+        shop_ids = shops.val();
+        if (!shop_ids) {
+            alert("{{ 'malldevel.admin.feature.related_product.add.error.no_shop_selected'|trans }}");
+            return;
+        }
+        initModal()
+        getProducts();
+    })
+    var initModal = function() {
+        start = 0
+        limit = 10
+        reachedMax = false;
+        productList.html("");
+
+        selectProducts = [];
+
+        var products = $.each($("input.form-products"), function() {
+            selectProducts.push(parseInt($(this).val()));
+        })
+        modal.modal("show")
+    }
+
+    var loading = false;
+
+    var getProducts = function() {
+        if (!shop_ids.length || reachedMax || loading) return;
+        loading = true;
+        $.ajax({
+            url: "{{ url('malldevel_admin_api_get_products') }}",
+            method: 'POST', 
+            data: {
+                shop_ids,
+                start,
+                limit
+            },
+            success: function(response) {
+                if (response.reachedMax) {
+                    reachedMax = true;
+                } else {
+                    var products = response;
+                    start += limit
+                    renderScroll(products);
+                }
+            },
+            complete: function() {
+                loading = false;
+            }
+        })
+    }
+    productList.scroll(function() {
+        if (productList.scrollTop() == productList[0].scrollHeight - productList.height()) {
+            getProducts();
+        }
+    })
+    var renderScroll = function(products) {
+        var template = products.reduce((acc, curr) => {
+            var activeString = "";
+            if (selectProducts.includes(curr.id)) {
+                activeString = "active"
+            }
+            return acc + `<li class="list-group-item ${activeString}" data-id="${curr.id}">
+<div class="row justify-content-around mode-view">
+<div class="col d-flex align-items-center">
+<img class="mr-2 img-product-thumbnail" src="/html/upload/save_image/${ curr.image }">${ curr.name }
+</div>
+</div>
+</li>`;
+        }, "")
+        productList.append(template)
+        productList.find('.list-group-item').off('click').on('click', function(e) {
+            var $this = $(this);
+            if ($this.hasClass("active")) {
+                $this.removeClass("active");
+            } else {
+                $this.addClass("active");
+            }
+        })
+    }
+
+    $("#add-product-confirm").on('click', function() {
+        var selections = productList.find(".list-group-item.active")
+        var currentProducts = [];
+
+        $.each(selections, function(index, product) {
+            currentProducts.push($(product).data('id'))
+        })
+        selectProducts = []
+        refreshProductTable(currentProducts);
+
+        modal.modal("hide")
+    })
+
+    var tableLoading = false;
+    var refreshProductTable = function(currentProducts = null) {
+        productTable.html("");
+        if (tableLoading || !currentProducts || !(currentProducts.length) ) return;
+        tableLoading = true
+
+        $.ajax({
+            url: "{{ url('malldevel_admin_api_get_products') }}",
+            method: 'POST', 
+            data: {
+                ids : currentProducts
+            },
+            success: function(response) {
+                if (response.reachedMax) {
+                    reachedMax = true;
+                } else {
+                    var products = response;
+                    renderProductTable(products);
+                }
+            },
+            complete: function() {
+                tableLoading = false;
+            }
+        })
+    }
+    var renderProductTable = function(products) {
+        var template = products.reduce((acc, curr) => {
+            var activeString = "";
+            return acc + `<tr>
+<td class="align-middle">${curr.id}</td>
+<td class="align-middle"><img src="/html/upload/save_image/${ curr.image }" style="max-width: 50px"></td><td class="align-middle">${ curr.name }</td>
+<td class="align-middle">${curr.code}</td><td class="align-middle">${curr.price}</td><td class="align-middle">${curr.stock}</td>
+<input type="hidden" class="form-products" name="feature[{{ form.products.vars.name }}][]" value="${curr.id}">
+</tr>`;
+        }, "")
+        productTable.append(template)
+    }
+
+    $("#{{ form.Shops.vars.id }}").on("change", function() {
+        var newShopIds = [...$("#{{ form.Shops.vars.id }}").val()];
+        var includeFlg = true;
+
+        if (shop_ids.length) {
+            for(var id of shop_ids) {
+                if (!newShopIds.includes(id)) {
+                    includeFlg = false;
+                    break;
+                }
+            }
+        } else {
+            includeFlg = false;
+        }
+
+        if (!includeFlg) {
+            refreshProductTable();
+        }
+    })
+    
+})
+</script>
+
+{% endblock %}
+
+{% block main %}
+<form role="form" name="form1" id="form1" method="post">
+{{ form_widget(form._token) }}
+
+    <div class="c-contentsArea__cols">
+        <div class="c-contentsArea__primaryCol">
+            <div class="c-primaryCol">
+                <div class="card rounded border-0 mb-4">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-8">
+                                <div class="d-inline-block">
+                                <span class="card-title">
+                                    {{ 'malldevel.common.feature'|trans }}
+                                </span>
+                                </div>
+                            </div>
+                            <div class="col-4 text-right">
+                                <a data-toggle="collapse" href="#basicConfig" aria-expanded="false"
+                                    aria-controls="basicConfig">
+                                    <i class="fa fa-angle-up fa-lg"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse show ec-cardCollapse" id="basicConfig">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-3">
+                                    <div class="d-inline-block">
+                                        <span>{{ 'malldevel.admin.content.feature.title'|trans }}</span>
+                                        <span class="badge badge-primary ml-1">
+                                            {{ 'admin.common.required'|trans }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col mb-2">
+                                    {{ form_widget(form.title) }}
+                                    {{ form_errors(form.title) }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-3">
+                                    <div class="d-inline-block">
+                                        <span>{{ 'malldevel.admin.content.feature.content'|trans }}</span>
+                                        <span class="badge badge-primary ml-1">
+                                            {{ 'admin.common.required'|trans }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col mb-2">
+                                    {{ form_widget(form.content) }}
+                                    {{ form_errors(form.content) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card rounded border-0 mb-4">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-8">
+                                <div class="d-inline-block">
+                                    <span class="card-title">
+                                        {{ 'malldevel.admin.feature.related_shop'|trans }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-4 text-right">
+                                <a data-toggle="collapse" href="#shop-config" aria-expanded="false"
+                                    aria-controls="shop-config">
+                                    <i class="fa fa-angle-up fa-lg"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse show ec-cardCollapse" id="shop-config">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-3">
+                                    <div class="d-inline-block">
+                                        <span>{{ 'malldevel.common.shop'|trans }}</span>
+                                        <span class="badge badge-primary ml-1">
+                                            {{ 'admin.common.required'|trans }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col mb-2">
+                                    {{ form_widget(form.Shops) }}
+                                    {{ form_errors(form.Shops) }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="d-inline-block">
+                                        <span>{{ 'malldevel.admin.feature.related_products'|trans }}</span>
+                                    </div>
+                                    <div class="d-inline-block ml-3">
+                                        <a class="btn btn-ec-regular" id="addProduct" href="#">{{ 'malldevel.admin.feature.related_product.add'|trans }}</a>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <table class="table table-sm" id="product-table">
+                                        <thead>
+                                        <tr>
+                                            <th class="border-top-0 pt-2 pb-2">{{ 'admin.product.product_id__short'|trans }}</th>
+                                            <th class="border-top-0 pt-2 pb-2">{{ 'admin.product.image__short'|trans }}</th>
+                                            <th class="border-top-0 pt-2 pb-2">{{ 'admin.product.name'|trans }}</th>
+                                            <th class="border-top-0 pt-2 pb-2">{{ 'admin.product.product_code__short'|trans }}</th>
+                                            <th class="border-top-0 pt-2 pb-2">{{ 'admin.product.price'|trans }}</th>
+                                            <th class="border-top-0 pt-2 pb-2">{{ 'admin.product.stock'|trans }}</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for FeatureProduct in Feature.FeatureProducts %}
+                                            {% set Product = FeatureProduct.Product.AsArray %}
+                                            <tr>
+                                                <td class="align-middle">{{ Product.id }}</td>
+                                                {# TODO: 画像のサイズをベタ指定しているので、styleguide側を直す #}
+                                                <td class="align-middle">
+                                                    <img src="{{ asset(Product.image|no_image_product, 'save_image') }}"
+                                                        style="max-width: 50px">
+                                                </td>
+                                                <td class="align-middle">{{ Product.name }}</td>
+                                                <td class="align-middle">
+                                                    {{ Product.code }}
+                                                </td>
+                                                <td class="align-middle">
+                                                    {{ FeatureProduct.Product.price02_min|price }}
+                                                    {% if FeatureProduct.Product.price02_min != FeatureProduct.Product.price02_max %}
+                                                        {{ 'admin.common.separator__range'|trans }}{{ FeatureProduct.Product.price02_max|price }}
+                                                    {% endif %}
+                                                </td>
+                                                <td class="align-middle">
+                                                    {{ Product.stock }}
+                                                </td>
+                                                <input type="hidden" class="form-products" name="feature[{{ form.products.vars.name }}][]" value="{{ Product.id }}">
+                                            </tr>
+                                        {% endfor %}
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="c-contentsArea__secondaryCol">
+            <div class="c-secondaryCol">
+                <div class="card rounded border-0 mb-4">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-8">
+                                <div class="d-inline-block">
+                                    <span class="card-title">{{ 'malldevel.admin.content.feature.thumbnail'|trans }}</span>
+                                </div>
+                            </div>
+                            <div class="col-4 text-right">
+                                <a data-toggle="collapse" href="#thumbnail" aria-expanded="false"
+                                    aria-controls="tags">
+                                    <i class="fa fa-angle-up fa-lg"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse show ec-cardCollapse" id="thumbnail">
+                        <div class="card-body">
+                            <div class="progress" style="display:none;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                                        aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+                            <div id="thumb" class="c-form__fileUploadThumbnails clearfix"></div>
+                            <p id="message"></p>
+                            <div id="upload-zone" class="media py-5 border-ec-dashed mb-2 rounded">
+                                <div class="media-body">
+                                    <i class="fa fa-cloud-upload fa-3x text-ec-lightGray mx-3 align-middle" aria-hidden="true"></i>
+                                    {{ 'admin.common.drag_and_drop_image_description'|trans }}
+                                    <input type="file" id="malldevel_image" name="malldevel_image" accept="image/*", style="display: none;" class="form-control-file">
+                                    <p class="text-center">
+                                        <a class="btn btn-ec-regular mr-2" onclick="$('#malldevel_image').click()">
+                                            {{ 'admin.common.file_select'|trans }}
+                                        </a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="c-conversionArea">
+            <div class="c-conversionArea__container">
+                <div class="row justify-content-between align-items-center">
+                    <div class="col-6">
+                        <div class="c-conversionArea__leftBlockItem">
+                            <a class="c-baseLink" href="{{ path('malldevel_admin_feature_page', { page_no : app.session.get('eccube.admin.product.search.page_no')|default('1') } ) }}"
+                                data-action="confirm" title="{{ 'admin.common.move_to_confirm_message'|trans({'%name%' : 'malldevel.admin.content.feature.list'|trans }) }}">
+                                <i class="fa fa-backward" aria-hidden="true"></i><span>{{ 'malldevel.admin.content.feature.list'|trans }}</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div id="ex-conversion-action" class="row align-items-center justify-content-end">
+                            <div class="col-auto">
+                                {{ form_widget(form.visible) }}
+                                {{ form_errors(form.visible) }}
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-ec-conversion px-5" type="submit">{{ 'admin.common.registration'|trans }}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</form>
+<div class="modal fade" id="addProductModal" tabindex="-1" role="dialog"
+        aria-labelledby="addProductModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ 'malldevel.admin.feature.related_product.add'|trans }}</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <ul class="list-group list-group-flush"></ul>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ec-sub" type="button" data-dismiss="modal">{{ 'admin.common.cancel'|trans }}</button>
+                <button class="btn btn-ec-delete" type="button" id="add-product-confirm">{{ 'malldevel.admin.feature.related_product.add' | trans }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

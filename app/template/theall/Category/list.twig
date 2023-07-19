@@ -1,0 +1,29 @@
+{% extends 'default_frame.twig' %}
+
+{% set page_name = 'category' %}
+
+{% block main %}
+    <h1>カテゴリー一覧</h1>
+    <div class="category__list">
+        {% for Category in Categories %}
+            <div class="category__list__item"><a href="{{ url('product_list', {category_id: Category.id}) }}">
+                    <div class="img">
+                        <img src="{% if Category.thumbnail is not empty %}{{ asset('admin/' ~ Category.thumbnail, 'save_image') }}{% else %}{{ asset(''|no_image_product, 'save_image') }}{% endif %}"
+                              alt="{{ Category.name }}"
+                              class="category-thumbnail"
+                        >
+                    </div>
+                    <p>{{ Category.name }}</p></a></div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block stylesheet %}
+    <style>
+        .category-thumbnail {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+        }
+    </style>
+{% endblock %}

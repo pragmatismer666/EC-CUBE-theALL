@@ -1,0 +1,12 @@
+{
+  "name": "ec-cube/CustomerBan",
+  "version": "0.1.0",
+  "description": "THE-ALLの不正顧客管理プラグイン",
+  "type": "eccube-plugin",
+  "require": {
+    "ec-cube/plugin-installer": "~0.0.6"
+  },
+  "extra": {
+    "code": "CustomerBan"
+  }
+}

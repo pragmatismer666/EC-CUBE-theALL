@@ -1,0 +1,59 @@
+.p-15px{
+  padding: 15px !important;
+}
+
+.p-32px {
+  padding: 32px !important;
+}
+
+.py-40px {
+  padding-bottom: 40px !important;
+  padding-top: 40px !important;
+}
+
+.mt-40px {
+  margin-top: 40px !important;
+}
+
+.mb-70px {
+  margin-bottom: 70px !important;
+}
+
+.mb-80px {
+  margin-bottom: 80px !important;
+}
+
+.custom-width{
+  padding: 0;
+  max-width: initial !important;
+  width: 1300px !important;
+  background-color: white;
+}
+
+.custom-padding{
+  padding-left: 105px !important;
+  padding-right: 105px !important;
+}
+
+.further-padding{
+  padding-left: 90px !important;
+  padding-right: 90px !important;
+}
+
+@media only screen and (max-width: 1300px) {
+  .custom-width{
+    width: 100% !important;
+  }
+}
+
+@media only screen and (max-width: 992px) {
+  .custom-padding{
+    padding-left: 30px !important;
+    padding-right: 30px !important;
+  }
+
+  .custom-padding{
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+  }
+}

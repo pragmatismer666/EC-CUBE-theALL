@@ -1,0 +1,165 @@
+{% extends '@admin/default_frame.twig' %}
+
+{% set menus = ['mshop', 'list'] %}
+{% block title %}{{ 'malldevel.admin.shop.label'|trans }}{% endblock %}
+
+{% block sub_title %}{{ 'malldevel.admin.shop.list'|trans }}{% endblock %}
+
+{% block main %}
+
+<div class="c-outsideBlock">
+    {# search form #}
+</div>
+<div class="c-contentsArea__cols">
+    <div class="c-contentsArea__primaryCol">
+        <div class="c-primaryCol">
+            {% if pagination and pagination.totalItemCount %}
+                <form id="form_bulk" method="POST" action="">
+                    <div class="row justify-content-between mb-2">
+                        <div class="col-6">
+                            <div id="btn_bulk" class="d-none">
+                                <label class="mr-2">{{ 'admin.common.bulk_actions'|trans }}</label>
+                                <div class="btn-group mr-2" role="group">
+                                    <button {{ csrf_token_for_anchor() }} class="btn btn-ec-regular action-submit" type="button"
+                                        data-action="" >
+                                        <span>{{ 'malldevel.admin.shop.display_status__show'|trans }}</span>
+                                    </button>
+                                    <button {{ csrf_token_for_anchor() }} class="btn btn-ec-regular action-submit" type="button"
+                                        data-action="">
+                                        <span>{{ 'malldevel.admin.shop.display_status__hide'|trans }}</span>
+                                    </button>
+                                </div>
+                                <button type="button" data-toggle="modal" data-target="#bulkDeleteModal" class="btn btn-ec-delete">{{ 'admin.product.permanently_delete'|trans }}</button>
+                            </div>
+                        </div>
+                        <div class="col-5 text-right">
+                            <div class="d-inline-block mr-2">
+                                <div>
+                                    <select class="custom-select" onchange="location = this.value;">
+                                        {% for pageMax in pageMaxis %}
+                                            <option {% if pageMax.name == page_count %} selected=""{% endif %}
+                                                value="{{ path('admin_product_page', { 'page_no' : 1, 'page_count' : pageMax.name }) }}">
+                                                {{ 'admin.common.count'|trans({ '%count%' : pageMax.name }) }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="d-inline-block">
+                                {# csv buttons #}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card rounded border-0 mb-4 d-block">
+                        <div class="card-body p-0">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th class="border-top-0 pl-3 pt-2 pb-2">
+                                            <input type="checkbox" name="filter" value="open" id="trigger_check_all">
+                                        </th>
+                                        <th class="border-top-0 pt-2 pb-2">{{ 'malldevel.admin.shop.logo'|trans }}</th>
+                                        <th class="border-top-0 pt-2 pb-2">{{ 'malldevel.admin.shop.name'|trans }}</th>
+                                        <th class="border-top-0 pt-2 pb-2">{{ 'malldevel.admin.shop.order_mail'|trans }}</th>
+                                        <th class="border-top-0 pt-2 pb-2">ふりがな</th>
+                                        <th class="border-top-0 pt-2 pb-2"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for Shop in pagination %}
+                                        <tr id="ex-shop-{{ Shop.Id }}">
+                                            <td class="align-middle pl-3">
+                                                <input type="checkbox" name="ids[]" value="{{ Shop.id }}"/>
+                                            </td>
+                                            <td class="align-middle">
+                                                {% if Shop.logo %} 
+                                                    <a href="{{ url('malldevel_admin_shop_edit', { id: Shop.id }) }}">
+                                                        <img src="{{ asset( (Shop.LogoPath )|no_image_product, 'save_image') }}" style="max-width: 50px; max-height: 50px;">
+                                                    </a>
+                                                {% endif %}
+                                            </td>
+                                            <td class="align-middle">
+                                                <a href="{{ url('malldevel_admin_shop_edit', { id: Shop.id })}}">
+                                                    {{ Shop.Name }}
+                                                </a>
+                                            </td>
+                                            <td class="align-middle">
+                                                {{ Shop.OrderMail }}
+                                            </td>
+                                            <td class="align-middle">
+                                                {% if Shop.Katakana is not empty %}
+                                                    {{ Shop.Katakana.Character }}
+                                                {% endif %}
+                                            </td>
+                                            <td class="align-middle">
+                                                <div class="text-center">
+                                                    <a href="#"
+                                                        data-url="{{ url('malldevel_admin_shop_delete', {id: Shop.id}) }}"
+                                                        data-text="{{ Shop.Name }}"
+                                                        class="btn btn-ec-actionIcon btn-delete" data-toggle="modal" data-target="#delete-modal" data-method="post" data-confirm="true">
+                                                        <i class="fa fa-close fa-lg text-secondary" data-tooltip="true" data-placement="top" title="削除"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="row justify-content-md-center mb-4">
+                            {% if pagination.totalItemCount > 0 %}
+                                {% include "@admin/pager.twig" with { 'pages' : pagination.paginationData, 'routes' : 'malldevel_admin_shop_list_page' } %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="delete-modal" tabindex="-1"
+     role="dialog"
+     aria-labelledby="localPluginDeleteModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title font-weight-bold">{{ 'malldevel.admin.shop.delete.confirm_title'|trans }}</h5>
+                <button class="close" type="button"
+                        data-dismiss="modal"
+                        aria-label="Close"><span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body text-left">
+                <p class="text-left">
+                    </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ec-sub" type="button"
+                        data-dismiss="modal">{{ 'admin.common.cancel'|trans }}
+                </button>
+                <a href="#" {{ csrf_token_for_anchor() }}
+                   class="btn btn-ec-delete"
+                   data-confirm="false"
+                   data-method="delete">
+                    {{ 'admin.common.delete'|trans }}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function() {
+        $(".btn-delete").on('click', function(e) {
+            e.preventDefault();
+            var url = $(this).data('url');
+            $(".modal#delete-modal .modal-footer a").attr("href", url);
+
+            var text = "{{ 'malldevel.admin.shop.delete.confirm.body'|trans }}".replace("__replace__", $(this).data("text"))
+            $(".modal#delete-modal .modal-body p").text(text);
+
+            $("div.modal#delete_modal").modal("show");
+        })
+    })
+</script>
+{% endblock %}

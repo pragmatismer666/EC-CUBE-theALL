@@ -1,0 +1,57 @@
+{#
+* Plugin Name : CustomerRank
+*
+* Copyright (C) BraTech Co., Ltd. All Rights Reserved.
+* http://www.bratech.co.jp/
+*
+* For the full copyright and license information, please view the LICENSE
+* file that was distributed with this source code.
+#}
+
+<script>
+    CustomerPrices = {{ CustomerPrices|json_encode|raw }};
+
+    $(function() {
+        // 規格1選択時
+        $('select[name=classcategory_id1]')
+        .change(function() {
+            var $form = $(this).parents('form');
+            var product_id = $form.find('input[name=product_id]').val();
+            var $sele1 = $(this);
+
+            eccube.checkStockCustomer($form, product_id, $sele1.val() , '');
+        });
+
+        // 規格2選択時
+        $('select[name=classcategory_id2]')
+        .change(function() {
+            var $form = $(this).parents('form');
+            var product_id = $form.find('input[name=product_id]').val();
+            var $sele1 = $form.find('select[name=classcategory_id1]');
+            var $sele2 = $(this);
+            eccube.checkStockCustomer($form, product_id, $sele1.val(), $sele2.val());
+        });
+    });
+
+    eccube.customer_rank_price_origin = [];
+    eccube.checkStockCustomer = function($form, product_id, classcat_id1, classcat_id2) {
+        if(!$form.parent().find('#customer_rank_price_default').length)return;
+        classcat_id2 = classcat_id2 ? classcat_id2 : '';
+        var classcat3;
+
+        classcat3 = CustomerPrices[product_id][classcat_id1]['#' + classcat_id2];
+
+        // 会員価格
+        var $customer_rank_price = $form.parent().find('#customer_rank_price_default').first();
+        if (typeof this.customer_rank_price_origin[product_id] === 'undefined') {
+            this.customer_rank_price_origin[product_id] = $customer_rank_price.text();
+        }
+        if (classcat3 && typeof classcat3.customer_rank_price_inc_tax !== 'undefined' && String(classcat3.customer_rank_price_inc_tax).length >= 1) {
+            $customer_rank_price.text('¥ ' + classcat3.customer_rank_price_inc_tax);
+        } else {
+            $customer_rank_price.text(this.customer_rank_price_origin[product_id]);
+        }
+    };
+
+</script>
+

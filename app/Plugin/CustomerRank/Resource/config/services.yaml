@@ -1,0 +1,26 @@
+services:
+    eccube.purchase.flow.cart.item_validators:
+        class: Doctrine\Common\Collections\ArrayCollection
+        arguments:
+            - #
+                - '@Eccube\Service\PurchaseFlow\Processor\DeliverySettingValidator'
+                - '@Eccube\Service\PurchaseFlow\Processor\ProductStatusValidator'
+                - '@Eccube\Service\PurchaseFlow\Processor\StockValidator'
+                - '@Eccube\Service\PurchaseFlow\Processor\SaleLimitValidator'
+
+    eccube.purchase.flow.shopping.item_validators:
+        class: Doctrine\Common\Collections\ArrayCollection
+        arguments:
+            - #
+                - '@Eccube\Service\PurchaseFlow\Processor\DeliverySettingValidator'
+                - '@Eccube\Service\PurchaseFlow\Processor\ProductStatusValidator'
+    customerrank.api.allow_list:
+        class: ArrayObject
+        tags: ['eccube.api.allow_list']
+        arguments:
+            - #
+                Eccube\Entity\Customer: ['check_date','CustomerRank']
+                Plugin\CustomerRank\Entity\CustomerRank: ['id','name','discount_rate','discount_value','point_rate','delivery_free_condition','cond_amount','cond_buytimes','initial_flg','fixed_flg','priority']
+                Eccube\Entity\ProductClass: ['CustomerPrices']
+                Plugin\CustomerRank\Entity\CustomerPrice: ['price','CustomerRank','ProductClass']
+                Eccube\Entity\Order: ['customer_rank_id','customer_rank_name']

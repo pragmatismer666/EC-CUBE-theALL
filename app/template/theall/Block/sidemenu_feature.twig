@@ -1,0 +1,11 @@
+<div class="row-sidebar__left__item row-sidebar__left__banners">
+  <h4>注目商品・特集</h4>
+  {% set VisibleFeatures = repository('Customize\\Entity\\Feature').getShownList() %}
+  {% if VisibleFeatures|length %}
+    {% for VisibleFeature in VisibleFeatures %}
+    <a href="{{ url('malldevel_front_feature_detail', {id: VisibleFeature.id}) }}"><img src="{{ asset(VisibleFeature.ThumbnailPath|no_image_product, 'save_image') }}" alt="">
+      <p>{{ VisibleFeature.title }}</p>
+    </a>
+    {% endfor %}
+  {% endif %}
+</div>

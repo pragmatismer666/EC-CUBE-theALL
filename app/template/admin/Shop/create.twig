@@ -1,0 +1,1095 @@
+{% extends '@admin/default_frame.twig' %}
+
+{% set CURRENT_ROLE = auth_service.getCurrentRole() %}
+{% if CURRENT_ROLE == "ROLE_ADMIN" %}
+    {% set menus = ['mshop', 'create'] %}
+{% else %}
+    {% set menus = ['setting', 'shop', 'shop_index'] %}
+{% endif %}
+{% block title %}{{ 'malldevel.admin.shop.label'|trans }}{% endblock %}
+
+{% block sub_title %}{{ 'malldevel.admin.shop.create'|trans }}{% endblock %}
+
+{% form_theme form '@admin/Form/bootstrap_4_horizontal_layout.html.twig' %}
+
+{% block stylesheet %}
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
+<style>
+.date-label {
+    display: inline-block;
+    align-self: center;
+}
+.req-error {
+    padding: 5px 10px;
+    border-radius: 5px;
+    background: rgba(200, 0,0,0.3);
+    border: 1px solid rgb(200, 0, 0);
+}
+.req-success {
+    padding: 5px;
+    border-radius: 5px;
+    background: rgba(0, 200, 0 , 0.3);
+    border: 1px solid rgb(0, 200, 0);
+}
+.c-form__fileUploadThumbnails .c-form__fileUploadThumbnail {
+    margin-right: 10px;
+}
+</style>
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="{{ asset('assets/js/vendor/fileupload/vendor/jquery.ui.widget.js', 'admin') }}"></script>
+    <script src="{{ asset('assets/js/vendor/fileupload/jquery.iframe-transport.js', 'admin') }}"></script>
+    <script src="{{ asset('assets/js/vendor/fileupload/jquery.fileupload.js', 'admin') }}"></script>
+    <script src="{{ asset('assets/js/vendor/fileupload/jquery.fileupload-process.js', 'admin') }}"></script>
+    <script src="{{ asset('assets/js/vendor/fileupload/jquery.fileupload-validate.js', 'admin') }}"></script>
+    <script>var bootstrapTooltip = $.fn.tooltip.noConflict();</script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
+    <script src="{{ asset('assets/vendor/ckeditor/ckeditor.js', 'admin') }}"></script>
+	<script>
+        $.fn.tooltip = bootstrapTooltip;
+        var proto_del = '{{ form_widget(form.delete_images.vars.prototype) }}';
+        $(document).on('drop dragover', function(e) {
+            e.preventDefault();
+        });
+        $(function() {
+            $("#thumb").sortable( {
+                cursor: 'move',
+                opacity: 0.7,
+                placeholder: 'ui-state-highlight',
+                update: function( event, ui ) {
+                    updateSordNo();
+                }
+            });
+            var hideThumbnail = function() {
+                if ($("#thumb div").length > 0) {
+                    $("#icon_no_image").css("display", "none");
+                    $('#message-logo-img').html("{{ 'admin.common.drag_and_drop_description'|trans }}");
+                } else {
+                    $("#icon_no_image").css("display", "");
+                    $('#message-logo-img').empty();
+                }
+            };
+            var updateSortNo = function() {
+                $("#thumb div").each(function(index) {
+                    $(this).find(".sort_no_images").remove();
+                    filename = $(this).find("input[type='hidden']").val();
+                    $sortNo = $('<input type="hidden" class="sort_no_images" name="sort_no_images[]" />');
+                    $sortNo.val(filename + '//' + parseInt(index + 1));
+                    $(this).append($sortNo);
+                });
+            };
+            var proto_img = '<div class="c-form__fileUploadThumbnail" style="background-image:url(\'__path__\');">' +
+                '<a class="delete-image"><i class="fa fa-times" aria-hidden="true"></i></a>' +
+                `<input type="hidden" name="malldevel_shop[logo]" id="logo_file">` +
+                '</div>';
+            
+            {% if Shop is defined and Shop.logo is not null %}
+            var current_logo = proto_img.replace(/__path__/g, "{{ asset(Shop.LogoPath, 'save_image') }}");
+            $("#thumb").html(current_logo);
+            $("#logo_file").val('{{ Shop.logo }}');
+            {% endif %}
+            $("#{{ form.logo_img.vars.id }}").fileupload( {
+                url: "{{ url('malldevel_admin_shop_logo_upload') }}",
+                type: "post",
+                sequentialUploads: true,
+                dataType: 'json',
+                dropZone: $('#upload-zone'),
+                done: function(e, data) {
+                    $('.progress').hide();
+                    if( data.result.files.length > 0) {
+                        var path = "{{ asset('', 'temp_image') }}" + data.result.files[0];
+                        $("#thumb").html(proto_img.replace(/__path__/g, path));
+                        $("#logo_file").val(data.result.files[0]);
+                    }
+                    hideThumbnail();
+                    updateSortNo();
+                },
+                fail: function(e, data) {
+                    $('.progress').hide();
+                    $('.progress .progress-bar').width('0%');
+                },
+                always: function(e, data) {
+                    $('.progress').hide();
+                    $('.progress .progress-bar').width('0%');
+                },
+                start: function(e, data) {
+                    $('.progress').show();
+                },
+                acceptFileTypes: /(\.|\/)(gif|jpe?g|png)$/i,
+                maxFileSize: 10000000,
+                maxNumberOfFiles: 10,
+                progressall: function(e, data) {
+                    var progress = parseInt(data.loaded / data.total * 100, 10);
+                    $('.progress .progress-bar').css(
+                        'width',
+                        progress + '%'
+                    );
+                },
+                processalways: function(e, data) {
+                    if ( data.files.error ) {
+                        alert("{{ 'admin.common.upload_error'|trans }}")
+                    }
+                }
+            });
+            $('#file_upload').on('click', function() {
+                $('#{{ form.logo_img.vars.id }}').click();
+            });
+            var count_del = 0;
+            $("#thumb").on("click", '.delete-image', function() {
+                var thumbnail = $(this).parents("div.c-form__fileUploadThumbnail");
+                var src = $(thumbnail).find("input").val();
+                var $new_delete_image = $(proto_del.replace(/__name__/g, count_del));
+                var thumbnail = $(this).parents('div.c-form__fileUploadThumbnail');
+                var src = $(thumbnail).find('input').val();
+                $new_delete_image.val(src);
+                $("#thumb").append($new_delete_image);
+                $(thumbnail).remove();
+                hideThumbnail();
+                updateSortNo();
+                count_del++;
+            })
+        })
+        $(function() {
+            {% if CURRENT_ROLE == "ROLE_ADMIN" %}
+                $("#{{ form.Members.vars.id }}").selectpicker();
+            {% endif %}
+        })
+    </script>
+    {{ include("@admin/assets/editor.js.twig") }}
+    <script>
+    $(function() {
+        initCkeditor({
+            selector_id      :  "{{ form.hp.vars.id }}",
+            data             :  "{{ (form.hp.vars.value|raw)|json_encode() }}"
+        })
+    })
+    </script>
+    
+    <script>
+    $(function() {
+        {% if Shop is defined %}
+            $("#{{ form.Status.vars.id }}").val("{{ Shop.Status.Id }}")
+        {% endif %}
+    });
+    </script>
+{% endblock %}
+
+{% block main %}
+{{ form_errors(form) }}
+<form role="form" name="form1" id="form1" method="post" action="" novalidate enctype="multipart/form-data">
+    {{ form_widget( form._token ) }}
+
+
+    <div class="c-contentsArea__cols">
+        <div class="c-contentsArea_primaryCol">
+            <div class="card rounded border-0 mb-4">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="d-inline-block">
+                                <span class="card-title">
+                                    {{ 'malldevel.admin.shop.create'|trans }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-4 text-right">
+                            <a data-toggle="collapse" href="#basicConfig" aria-expanded="false"
+                                aria-controls="basicConfig">
+                                <i class="fa fa-single-up fa-lg"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="collapse show ec-cardCollapse" id="basicConfig">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="d-inline-block">
+                                    <span>{{ 'malldevel.admin.shop.name'|trans }}</span>
+                                    <span class="badge badge-primary ml-1">
+                                        {{ 'admin.common.required'|trans }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col mb-2">
+                                {{ form_widget(form.name) }}
+                                {{ form_errors(form.name) }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="d-inline-block">
+                                    <span>ショップ名称(カナ)</span>
+                                    <span class="badge badge-primary ml-1">
+                                        {{ 'admin.common.required'|trans }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col mb-2">
+                                {{ form_widget(form.kana) }}
+                                {{ form_errors(form.kana) }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="d-inline-block">
+                                    <span>電話番号</span>
+                                </div>
+                            </div>
+                            <div class="col mb-2">
+                                {{ form_widget(form.phone_number) }}
+                                {{ form_errors(form.phone_number) }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="d-inline-block">
+                                    <span>{{ 'malldevel.admin.shop.order_mail'|trans }}</span>
+                                    <span class="badge badge-primary ml-1">
+                                        {{ 'admin.common.required'|trans }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col mb-2">
+                                {{ form_widget(form.order_mail) }}
+                                {{ form_errors(form.order_mail) }}
+                            </div>
+                        </div>
+                        {% if CURRENT_ROLE == "ROLE_ADMIN" %}
+                        
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="d-inline-block">
+                                    <span>{{ 'malldevel.admin.shop.owner'|trans }}</span>
+                                </div>
+                                <span class="badge badge-primary ml-1">
+                                    {{ 'admin.common.required'|trans }}
+                                </span>
+                            </div>
+                            <div class="col mb-2">
+                                {{ form_widget(form.Members) }}
+                                {{ form_errors(form.Members) }}
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="d-inline-block">
+                                    <span>{{ 'malldevel.admin.shop.logo'|trans }}</span>
+                                    
+                                </div>
+                            </div>
+                            <div class="col mb-2">
+                                <div class="progress" style="display: none; ">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                                        aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                    </div>
+                                </div>
+                                <div id="thumb" class="c-form__fileUploadThumbnails clearfix"></div>
+                                <p id="message-logo-img"></p>
+                                <div id="upload-zone" class="media py-5 border-ec-dashed mb-2 rounded">
+                                    <div class="media-body">
+                                        <i class="fa fa-cloud-upload fa-3x text-ec-lightGray mx-3 align-middle" aria-hidden="true"></i>
+                                        {{ 'admin.common.drag_and_drop_image_description'|trans }}
+                                        {{ form_widget(form.logo_img, { attr: { accept : 'image/*', style : 'display: none;' }} ) }}
+                                        {{ form_errors(form.logo_img) }}
+                                        <a class="btn btn-ec-regular mr-2" onclick="$('#{{ form.logo_img.vars.id }}').click()">
+                                            {{ 'admin.common.file_select'|trans }}
+                                        </a>
+                                    </div>
+                                </div><!-- upload-zone -->
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="d-inline-block">
+                                    <span>{{ 'malldevel.admin.shop.contact'|trans }}</span>
+                                </div>
+                            </div>
+                            <div class="col mb-2">
+                                {{ form_widget(form.contact) }}
+                                {{ form_errors(form.contact) }}
+                            </div>
+                        </div>
+
+
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="d-inline-block">
+                                    <span>{{ 'malldevel.admin.shop.capital'|trans }}</span>
+                                </div>
+                            </div>
+                            <div class="col mb-2">
+                                {{ form_widget(form.capital) }}
+                                {{ form_errors(form.capital) }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="d-inline-block">
+                                    <span>{{ 'malldevel.admin.shop.founded_at'|trans }}</span>
+                                </div>
+                            </div>
+                            <div class="col mb-2">
+                                {{ form_widget(form.founded_at) }}
+                                {{ form_errors(form.founded_at) }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="d-inline-block">
+                                    <span>{{ 'malldevel.admin.shop.representative'|trans }}</span>
+                                </div>
+                            </div>
+                            <div class="col mb-2">
+                                {{ form_widget(form.representative) }}
+                                {{ form_errors(form.representative) }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-3">
+                                <span>{{ 'admin.common.address'|trans }}</span>
+                            </div>
+                            <div class="col">
+                                <div class="mb-3">
+                                    <div class="row justify-content-start">
+                                        <div class="col-auto pr-0 align-self-center"><span>{{ 'admin.common.postal_symbol'|trans }}</span></div>
+                                        <div class="col-2">
+                                            {{ form_widget(form.postal_code) }}
+
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            {{ form_errors(form.postal_code) }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="row justify-content-start">
+                                        <div class="col-auto">
+                                            {{ form_widget(form.address.pref) }}
+                                            {{ form_errors(form.address.pref) }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    {{ form_widget(form.address.addr01, { attr : { placeholder : 'admin.common.address_sample_01' }} ) }}
+                                    {{ form_errors(form.address.addr01) }}
+                                </div>
+                                <div class="mb-3">
+                                    {{ form_widget(form.address.addr02, { attr : { placeholder : 'admin.common.address_sample_02' }}) }}
+                                    {{ form_errors(form.address.addr02) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="d-inline-block">
+                                    <span>{{ 'malldevel.admin.shop.company'|trans }}</span>
+                                </div>
+                            </div>
+                            <div class="col mb-2">
+                                {{ form_widget(form.company_name) }}
+                                {{ form_errors(form.company_name) }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="d-inline-block">
+                                    <span>会社概要</span>
+                                </div>
+                            </div>
+                            <div class="col mb-2">
+                                {{ form_widget(form.intro) }}
+                                {{ form_errors(form.intro) }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="d-inline-block">
+                                    <span>{{ 'malldevel.admin.shop.gmap_enabled'|trans }}</span>
+                                </div>
+                            </div>
+                            <div class="col mb-2">
+                                {{ form_widget(form.gmap_enabled) }}
+                                {{ form_errors(form.gmap_enabled) }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="d-inline-block">
+                                    <span>{{ 'malldevel.admin.shop.company_photo'|trans }}</span>
+                                    
+                                </div>
+                            </div>
+                            <div class="col mb-2">
+                                <div class="progress-shop-photos" style="display: none; ">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                                        aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                    </div>
+                                </div>
+                                <div id="thumb-shop-photos" class="c-form__fileUploadThumbnails clearfix"></div>
+                                <p id="message-shop-photos"></p>
+                                <div id="upload-zone-shop-photo" class="media py-5 border-ec-dashed mb-2 rounded">
+                                    <div class="media-body">
+                                        <i class="fa fa-cloud-upload fa-3x text-ec-lightGray mx-3 align-middle" aria-hidden="true"></i>
+                                        {{ 'admin.common.drag_and_drop_image_description'|trans }}
+                                        {{ form_widget(form.shop_photos, { attr: { accept : 'image/*', style : 'display: none;' }} ) }}
+                                        {{ form_errors(form.shop_photos) }}
+                                        <a class="btn btn-ec-regular mr-2" onclick="$('#{{ form.shop_photos.vars.id }}').click()">
+                                            {{ 'admin.common.file_select'|trans }}
+                                        </a>
+                                    </div>
+                                </div><!-- upload-zone -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card rounded border-0 mb-4">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="d-inline-block">
+                                <span class="card-title">
+                                    {{ 'malldevel.admin.shop.tokusho'|trans }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-4 text-right">
+                            <a data-toggle="collapse" href="#tokusho" aria-expanded="false"
+                                aria-controls="tokusho">
+                                <i class="fa fa-single-up fa-lg"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="collapse show ec-cardCollapse" id="tokusho">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="d-inline-block">
+                                    <span>{{ 'malldevel.admin.shop.tokusho.delivery'|trans }}</span>
+                                </div>
+                            </div>
+                            <div class="col mb-2">
+                                {{ form_widget(form.Tokusho.delivery) }}
+                                {{ form_errors(form.Tokusho.delivery) }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="d-inline-block">
+                                    <span>{{ 'malldevel.admin.shop.tokusho.delivery_time'|trans }}</span>
+                                </div>
+                            </div>
+                            <div class="col mb-2">
+                                {{ form_widget(form.Tokusho.delivery_time) }}
+                                {{ form_errors(form.Tokusho.delivery_time) }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="d-inline-block">
+                                    <span>{{ 'malldevel.admin.shop.tokusho.receipt'|trans }}</span>
+                                </div>
+                            </div>
+                            <div class="col mb-2">
+                                {{ form_widget(form.Tokusho.receipt) }}
+                                {{ form_errors(form.Tokusho.receipt) }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="d-inline-block">
+                                    <span>{{ 'malldevel.admin.shop.tokusho.payment_method'|trans }}</span>
+                                </div>
+                            </div>
+                            <div class="col mb-2">
+                                {{ form_widget(form.Tokusho.payment_method) }}
+                                {{ form_errors(form.Tokusho.payment_method) }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="d-inline-block">
+                                    <span>{{ 'malldevel.admin.shop.tokusho.rcx_overview'|trans }}</span>
+                                </div>
+                            </div>
+                            <div class="col mb-2">
+                                {{ form_widget(form.Tokusho.rcx_overview) }}
+                                {{ form_errors(form.Tokusho.rcx_overview) }}
+                                <div class="row mt-2">
+                                    <div class="col-3">
+                                        <div class="d-inline-block">
+                                            <span>{{ 'malldevel.admin.shop.tokusho.cancel'|trans }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col mb-2">
+                                        {{ form_widget(form.Tokusho.cancel) }}
+                                        {{ form_errors(form.Tokusho.cancel) }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-3">
+                                        <div class="d-inline-block">
+                                            <span>{{ 'malldevel.admin.shop.tokusho.refund'|trans }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col mb-2">
+                                        {{ form_widget(form.Tokusho.refund) }}
+                                        {{ form_errors(form.Tokusho.refund) }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-3">
+                                        <div class="d-inline-block">
+                                            <span>{{ 'malldevel.admin.shop.tokusho.exchange'|trans }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col mb-2">
+                                        {{ form_widget(form.Tokusho.exchange) }}
+                                        {{ form_errors(form.Tokusho.exchange) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% if Shop is defined %}
+            <div class="card rounded border-0 mb-4">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="d-inline-block">
+                                <span class="card-title">
+                                    {{ 'malldevel.admin.shop.hp.edit'|trans }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-4 text-right">
+                            <a data-toggle="collapse" href="#basicConfig" aria-expanded="false"
+                                aria-controls="basicConfig">
+                                <i class="fa fa-single-up fa-lg"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="collapse show ec-cardCollapse" id="basicConfig">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                {{ form_widget(form.hp) }}
+                                {{ form_errors(form.hp) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% if CURRENT_ROLE == "ROLE_ADMIN" %}
+            <div class="card rounded border-0 mb-4">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="d-inline-block">
+                                <span class="card-title">
+                                    {{ 'malldevel.admin.stripe.shop.verification_status'|trans }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-4 text-right">
+                            <a data-toggle="collapse" href="#stripe-status" aria-expanded="false"
+                                aria-controls="stripe-status">
+                                <i class="fa fa-single-up fa-lg"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="collapse show ec-cardCollapse" id="stripe-status">
+                    <div class="card-body">
+                        {% if Shop is defined %}
+                        <div class="row mb-3">
+                            <div class="col-12 mb-2">
+                                <a class="btn btn-ec-regular mr-2" id="check-status">{{ 'malldevel.admin.stripe.shop.check_verify_status'|trans }}</a>
+                                {# {% if Shop.isStripeRegistered == false %}
+                                <a class="btn btn-ec-regular mr-2" id="stripe-register">{{ 'malldevel.admin.stripe.shop.stripe_register_link'|trans }}</a>
+                                {% endif %} #}
+                            </div>
+                            <div class="col-12 mb-1">
+                                <div class="stripe-requirements"></div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="row">
+                            <div class="col mb-2">
+                                <div class="progress1" style="display: none;">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <div id="thumb1" class="c-form__fileUploadThumbnails clearfix"></div>
+                                <p id="message-identity-docs"></p>
+                                <div id="upload-zone1" class="media py-5 border-ec-dashed mb-2 rounded">
+                                    <div class="media-body">
+                                        <i class="fa fa-cloud-upload fa-3x text-ec-lightGray mx-3 align-middle" aria-hidden="true"></i>
+                                        {{ 'admin.common.drag_and_drop_image_description'|trans }}
+                                        {{ form_widget(form.identity_docs, { attr : { accept : 'image/*', style : 'display:none;' } }) }}
+                                        {{ form_errors(form.identity_docs) }}
+                                        <a class="btn btn-ec-regular mr-2" onclick="$('#{{ form.identity_docs.vars.id }}').click()">
+                                            {{ 'admin.common.file_select'|trans }}
+                                        </a>
+                                    </div><!-- /.media-body -->
+                                </div><!-- /.media -->
+                            </div>
+                            {# {% if Shop.ShopIdentityDocs|length %}
+                            <div class="col-12">
+                                <div><a class="btn btn-ec-regular" id="upload-iddoc">{{ 'malldevel.admin.stripe.upload_iddoc'|trans }}</a></div>
+                                <div class="stripe-upload-result"></div>
+                            </div>
+                            {% endif %} #}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% endif %}
+            
+            <div class="card rounded border-0 mb-4">
+                <div class="card-header"><span>{{ 'admin.setting.shop.shop.option_delivery_fee'|trans }}</span></div>
+                <div id="ex-shop-delivery" class="card-body">
+                    <div class="row">
+                        <div class="col-3">
+                            <div class="d-inline-block" data-tooltip="true" data-placement="top" title="{{ 'tooltip.setting.shop.shop.option_delivery_fee_free_amount'|trans }}"><span>{{ 'admin.setting.shop.shop.option_delivery_fee_free_amount'|trans }}</span><i class="fa fa-question-circle fa-lg ml-1"></i></div>
+                        </div>
+                        <div class="col-4 mb-2">
+                            {{ form_widget(form.delivery_free_amount) }}
+                            {{ form_errors(form.delivery_free_amount) }}
+                        </div>
+                        <div class="col"></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3">
+                            <div class="d-inline-block" data-tooltip="true" data-placement="top" title="{{ 'tooltip.setting.shop.shop.option_delivery_fee_free_quantity'|trans }}"><span>{{ 'admin.setting.shop.shop.option_delivery_fee_free_quantity'|trans }}</span><i class="fa fa-question-circle fa-lg ml-1"></i></div>
+                        </div>
+                        <div class="col-4 mb-2">
+                            {{ form_widget(form.delivery_free_quantity) }}
+                            {{ form_errors(form.delivery_free_quantity) }}
+                        </div>
+                        <div class="col"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="c-contentsArea__secondaryCol">
+            <div class="c-secondaryCol">
+            {% if Shop is defined and Shop is not null %}
+                <div class="card rounded border-0 mb-4">
+                    <div class="card-body">
+                        <div class="d-block text-center">
+                            <a class="btn btn-block btn-ec-regular"
+                                data-action="confirm"
+                                href="{{ path('malldevel_front_shop_detail', {'id' : Shop.id }) }}"
+                                target="_blank">
+                                ショップ詳細
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+                <div class="card rounded border-0 mb-4">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-8">
+                                <div class="d-inline-block">
+                                    <span class="card-title">カテゴリ</span>
+                                </div>
+                            </div>
+                            <div class="col-4 text-right">
+                                <a data-toggle="collapse" href="#category" aria-expanded="false" aria-controls="category">
+                                    <i class="fa fa-angle-up fa-lg"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse show ec-cardCollapse" id="category">
+                        <div class="card-body">
+                            <div class="c-directoryTree--register rounded border mb-3 p-3">
+                                {% for TopCategory in TopCategories %}
+                                <ul class="list-unstyled">
+                                    <li class="c-directoryTree--registerItem category-li">
+                                        <input type="checkbox" id="malldevel_shop_category_{{ TopCategory.id }}" name="malldevel_shop[Category][]"
+                                            value="{{ TopCategory.id }}"
+                                            {% if TopCategory.id in SelectedIds %} checked {% endif %}>
+                                        <label for="malldevel_shop_category_{{ TopCategory.id }}">{{ TopCategory.name }}</label>
+                                    </li>
+                                </ul>
+                                {% endfor %}
+                                {{ form_errors( form.Category ) }}
+                            </div>
+                            {% if CURRENT_ROLE == "ROLE_ADMIN" %}
+                                <div class="d-block text-center">
+                                    <a class="btn btn-block btn-ec-regular"
+                                        data-action="confirm"
+                                        href="{{ path('admin_product_category') }}"
+                                        title="{{ 'admin.common.move_to_confirm_message'|trans({
+                                           '%name%' : 'admin.product.category_management'|trans}) }}">
+                                        {{ 'admin.product.move_to_category'|trans }}
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card rounded border-0 mb-4">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-8">
+                                <div class="d-inline-block">
+                                    <span class="card-title">シリーズ</span>
+                                </div>
+                            </div>
+                            <div class="col-4 text-right">
+                                <a data-toggle="collapse" href="#category" aria-expanded="false" aria-controls="category">
+                                    <i class="fa fa-angle-up fa-lg"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse show ec-cardCollapse" id="category">
+                        <div class="card-body">
+                            <div class="c-directoryTree--register rounded border mb-3 p-3">
+                            {{ form_widget(form.Serieses) }}
+                            {{ form_errors(form.Serieses) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="c-conversionArea">
+        <div class="c-conversionArea__container">
+            <div class="row justify-content-between align-items-center">
+                <div class="col-6">
+                    <div class="c-conversionArea__leftBlockItem">
+                    {% if CURRENT_ROLE == "ROLE_ADMIN" %}
+                        <a class="c-baseLink" href="{{ path('malldevel_admin_shop_list') }}"
+                            data-action="confirm" title="{{ 'admin.common.move_to_confirm_message'|trans({'%name%' : 'admin.product.product_list'|trans }) }}">
+                            <i class="fa fa-backward" aria-hidden="true"></i><span>{{ 'malldevel.admin.shop.list'|trans }}</span>
+                        </a>
+                    {% endif %}
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div id="ex-conversion-action" class="row align-items-center justify-content-end">
+                        <div class="col-auto">
+                            {{ form_widget(form.Status) }}
+                            {{ form_errors(form.Status) }}
+                        </div>
+                        <div class="col-auto">
+                            <button class="btn btn-ec-conversion px-5" type="submit">{{ 'admin.common.registration'|trans }}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% if CURRENT_ROLE == "ROLE_ADMIN" %}
+<script>
+$(function() {
+    $("#thumb1").sortable({
+        cursor: 'move',
+        opacity: 0.7,
+        placeholder: 'ui-state-highlight',
+        update: function(event, ui) {
+            updateSortNo();
+        }
+    });
+    
+    var proto_img = '<div class="c-form__fileUploadThumbnail" style="background-image:url(\'__path__\');">' +
+        '<a class="delete-image"><i class="fa fa-times" aria-hidden="true"></i></a>' +
+        '</div>';
+    var proto_add = '{{ form_widget(form.add_iddocs.vars.prototype) }}';
+    {# var proto_del = '{{ form_widget(form.delete_images.vars.prototype) }}'; #}
+
+    {% if Shop is defined %}
+    var $img = "";
+    var $widget = null;
+    {% for image in Shop.ShopIdentityDocs %}
+    $img = $(proto_img.replace(/__path__/g, '{{ asset(image.file_name, 'save_image') }}'));
+    $widget = $('<input type="hidden">');
+    $widget.val('{{ image.file_name }}');
+    $("#thumb1").append($img.append($widget));
+    {% endfor %}
+    {% endif %}
+
+    var hideThumbnail = function() {
+        if ($("#thumb1 div").length > 0) {
+            $("#icon_no_image").css("display", "none");
+            $('#message-identity-docs').html("{{ 'admin.common.drag_and_drop_description'|trans }}");
+        } else {
+            $("#icon_no_image").css("display", "");
+            $('#message-identity-docs').empty();
+        }
+    };
+    // Todo: fix update sort by drag&drop
+    var updateSortNo = function() {
+        $("#thumb1 div").each(function(index) {
+            $(this).find(".sort_no_images").remove();
+            filename = $(this).find("input[type='hidden']").val();
+            $sortNo = $('<input type="hidden" class="sort_no_images" name="sort_no_images[]" />');
+            $sortNo.val(filename + '//' + parseInt(index + 1));
+            $(this).append($sortNo);
+        });
+    };
+    hideThumbnail();
+    updateSortNo();
+    // Delete of images
+    var count_del = 0;
+    $("#thumb1").on("click", '.delete-image', function() {
+        var $new_delete_image = $(proto_del.replace(/__name__/g, count_del));
+        var thumbnail = $(this).parents('div.c-form__fileUploadThumbnail');
+        var src = $(thumbnail).find('input').val();
+        $new_delete_image.val(src);
+        $("#thumb1").append($new_delete_image);
+        $(thumbnail).remove();
+        hideThumbnail();
+        updateSortNo();
+        count_del++;
+    });
+    var count_add = {{ form.add_iddocs|length|default(0) }};
+    $('#{{ form.identity_docs.vars.id }}').fileupload({
+        url: "{{ url('malldevel_admin_iddocs_add') }}",
+        type: "post",
+        sequentialUploads: true,
+        dataType: 'json',
+        dropZone: $('#upload-zone1'),
+        done: function(e, data) {
+            $('.progress1').hide();
+            $.each(data.result.files, function(index, file) {
+                var path = '{{ asset('', 'temp_image') }}' + file;
+                var $img = $(proto_img.replace(/__path__/g, path));
+                var $new_img = $(proto_add.replace(/__name__/g, count_add));
+                $new_img.val(file);
+                $child = $img.append($new_img);
+                $('#thumb1').append($child);
+                count_add++;
+            });
+            hideThumbnail();
+            updateSortNo();
+        },
+        fail: function(e, data) {
+            alert("{{ 'admin.common.upload_error'|trans }}");
+        },
+        always: function(e, data) {
+            $('.progress1').hide();
+            $('.progress1 .progress-bar').width('0%');
+        },
+        start: function(e, data) {
+            $('.progress1').show();
+        },
+        acceptFileTypes: /(\.|\/)(gif|jpe?g|png)$/i,
+        maxFileSize: 10000000,
+        maxNumberOfFiles: 10,
+        progressall: function(e, data) {
+            var progress = parseInt(data.loaded / data.total * 100, 10);
+            $('.progress1 .progress-bar').css(
+                'width',
+                progress + '%'
+            );
+        },
+        processalways: function(e, data) {
+            if (data.files.error) {
+                alert("{{ 'admin.common.upload_error'|trans }}");
+            }
+        }
+    });
+    
+
+    {# ==========Check Status========= #}
+    {% if CURRENT_ROLE == "ROLE_ADMIN" and Shop is defined %}
+    var check_loading = false;
+    $("#check-status").on("click", function() {
+
+        if (check_loading) return;
+
+        check_loading = true;
+        var req_tag = $(".stripe-requirements")
+        req_tag.text("")
+        $.ajax({
+            url:    "{{ url('malldevel_admin_shop_stripe_verif_status', {id : Shop.id}) }}",
+            method: "GET",
+            success: function(response) {
+                if (response.success) {
+                    var requirements = response.requirements
+                    
+                    if (requirements.length) {
+                        requirements.forEach(function(req) {
+                            req_tag.append("<div class='req-error'>" + req + "</div>")
+                        })
+                    } else {
+                        req_tag.append("<div class='req-success'>{{ 'malldevel.admin.stripe.requirement.no_error'|trans }}</div>")
+                    }
+                } else {
+                    req_tag.append("<div class='req-error'>" + response.error + "</div>")
+                }
+            },
+            complete: function() {
+                check_loading = false;
+            }
+        })
+    })
+    var stripe_upload_loading = false;
+    $("#upload-iddoc").on("click", function() {
+        if (stripe_upload_loading) return;
+
+        var upload_result = $(".stripe-upload-result")
+        stripe_upload_loading = true;
+
+        $.ajax({
+            url :   "{{ url('malldevel_admin_shop_stripe_upload_identity', {id: Shop.id}) }}",
+            method: "GET",
+            success: function(response) {
+                if (result.success) {
+                    upload_result.append("<div class='req-success'>{{ 'malldevel.admin.stripe.upload_iddoc.success'|trans }}</div>")
+                } else {
+                    upload_result.append("<div class='req-error'>" + result.error + "</div>")
+                }
+            },
+            complete: function() {
+                stripe_upload_loading = false;
+            }
+        })
+    })
+    {% endif %}
+})
+</script>
+{% endif %}
+
+<script>
+$(function() {
+    $("#thumb-shop-photos").sortable({
+        cursor: 'move',
+        opacity: 0.7,
+        placeholder: 'ui-state-highlight',
+        update: function(event, ui) {
+            updateSortNo();
+        }
+    });
+    
+    var proto_img = '<div class="c-form__fileUploadThumbnail" style="background-image:url(\'__path__\');">' +
+        '<a class="delete-image"><i class="fa fa-times" aria-hidden="true"></i></a>' +
+        '</div>';
+    var proto_add = '{{ form_widget(form.add_shop_photos.vars.prototype) }}';
+    {# var proto_del = '{{ form_widget(form.delete_images.vars.prototype) }}'; #}
+
+    {% if Shop is defined %}
+    var $img = "";
+    var $widget = null;
+    {% for image in Shop.ShopPhotos %}
+    $img = $(proto_img.replace(/__path__/g, '{{ asset(image.file_name, 'save_image') }}'));
+    $widget = $('<input type="hidden">');
+    $widget.val('{{ image.file_name }}');
+    $("#thumb-shop-photos").append($img.append($widget));
+    {% endfor %}
+    {% endif %}
+
+    var hideThumbnail = function() {
+        if ($("#thumb-shop-photos div").length > 0) {
+            $("#icon_no_image").css("display", "none");
+            $('#message-shop-photos').html("{{ 'admin.common.drag_and_drop_description'|trans }}");
+        } else {
+            $("#icon_no_image").css("display", "");
+            $('#message-shop-photos').empty();
+        }
+    };
+    // Todo: fix update sort by drag&drop
+    var updateSortNo = function() {
+        $("#thumb-shop-photos div").each(function(index) {
+            $(this).find(".sort_no_images").remove();
+            filename = $(this).find("input[type='hidden']").val();
+            $sortNo = $('<input type="hidden" class="sort_no_images" name="sort_no_images[]" />');
+            $sortNo.val(filename + '//' + parseInt(index + 1));
+            $(this).append($sortNo);
+        });
+    };
+    hideThumbnail();
+    updateSortNo();
+    // Delete of images
+    var count_del = 0;
+    $("#thumb-shop-photos").on("click", '.delete-image', function() {
+        var $new_delete_image = $(proto_del.replace(/__name__/g, count_del));
+        var thumbnail = $(this).parents('div.c-form__fileUploadThumbnail');
+        var src = $(thumbnail).find('input').val();
+        $new_delete_image.val(src);
+        $("#thumb-shop-photos").append($new_delete_image);
+        $(thumbnail).remove();
+        hideThumbnail();
+        updateSortNo();
+        count_del++;
+    });
+    
+    var count_add = {{ form.add_shop_photos|length|default(0) }};
+    $('#{{ form.shop_photos.vars.id }}').fileupload({
+        url: "{{ url('malldevel_admin_image_temp_upload') }}",
+        type: "post",
+        sequentialUploads: true,
+        dataType: 'json',
+        dropZone: $('#upload-zone-shop-photo'),
+        done: function(e, data) {
+            $('.progress-shop-photos').hide();
+            $.each(data.result.files, function(index, file) {
+                if (count_add >= 3) {
+                    alert("{{'malldevel.admin.shop.company_image.file_count_limit_message'|trans }}");
+                    return;
+                }
+                var path = '{{ asset('', 'temp_image') }}' + file;
+                var $img = $(proto_img.replace(/__path__/g, path));
+                var $new_img = $(proto_add.replace(/__name__/g, count_add));
+                $new_img.val(file);
+                $child = $img.append($new_img);
+                $('#thumb-shop-photos').append($child);
+                count_add++;
+            });
+            hideThumbnail();
+            updateSortNo();
+        },
+        fail: function(e, data) {
+            alert("{{ 'admin.common.upload_error'|trans }}");
+        },
+        always: function(e, data) {
+            $('.progress-shop-photos').hide();
+            $('.progress-shop-photos .progress-bar').width('0%');
+        },
+        start: function(e, data) {
+            $('.progress-shop-photos').show();
+        },
+        acceptFileTypes: /(\.|\/)(gif|jpe?g|png)$/i,
+        maxFileSize: 10000000,
+        maxNumberOfFiles: 3,
+        progressall: function(e, data) {
+            var progress = parseInt(data.loaded / data.total * 100, 10);
+            $('.progress-shop-photos .progress-bar').css(
+                'width',
+                progress + '%'
+            );
+        },
+        processalways: function(e, data) {
+            if (data.files.error) {
+                alert("{{ 'admin.common.upload_error'|trans }}");
+            }
+        }
+    });
+})
+</script>
+{% endblock %}

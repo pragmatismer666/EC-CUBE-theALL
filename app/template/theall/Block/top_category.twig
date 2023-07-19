@@ -1,0 +1,30 @@
+<section class="category">
+    <div class="container">
+        <div class="balloon-ttl">
+            <h3>CATEGORY<span>カテゴリー</span></h3>
+        </div>
+        {% set Categories = repository('Eccube\\Entity\\Category').list %}
+        <div class="category__list">
+            {% for Category in Categories %}
+                <div class="category__list__item">
+                    <a href="{{ url('product_list') }}?category_id={{ Category.id }}">
+                        <div class="img">
+                            <img src="{% if Category.thumbnail is not empty %}{{ asset('admin/' ~ Category.thumbnail, 'save_image') }}{% else %}{{ asset(''|no_image_product, 'save_image') }}{% endif %}"
+                                 alt="{{ Category.name }}"
+                                 class="category-thumbnail"
+                            >
+                            <p>{{ Category.name }}</p>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+<style>
+    .category-thumbnail {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+    }
+</style>

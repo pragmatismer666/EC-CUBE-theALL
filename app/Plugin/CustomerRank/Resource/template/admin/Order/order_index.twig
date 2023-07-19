@@ -1,0 +1,34 @@
+{#
+* Plugin Name : CustomerRank
+*
+* Copyright (C) BraTech Co., Ltd. All Rights Reserved.
+* http://www.bratech.co.jp/
+*
+* For the full copyright and license information, please view the LICENSE
+* file that was distributed with this source code.
+#}
+
+<div id="search_customer_rank" style="display:none;">
+    <div class="row mb-2">
+        <div class="col">
+            <div class="form-row">
+                <div class="col-12">
+                <p class="col-form-label">{{ 'customerrank.common.rank'|trans }}</p>
+                {{ form_widget(searchForm.customer_rank, { 'label_attr': { 'class': 'checkbox-inline'}}) }}
+                {{ form_errors(searchForm.customer_rank) }}
+                <p style="color:#F00;">{{ 'customerrank.admin.order.index.search.description.customerrank'|trans }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function() {
+        $elem = $('#search_customer_rank');
+        $('#searchDetail').prepend($elem.html());
+        $elem.remove();
+    });
+</script>

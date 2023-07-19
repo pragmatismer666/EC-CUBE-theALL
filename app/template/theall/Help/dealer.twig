@@ -1,0 +1,28 @@
+{% extends 'default_frame.twig' %}
+
+{% set container_class = 'dealer' %}
+
+{% block main %}
+    <h1>小売店・製造販売業者の皆様へ</h1>
+    <div class="dealer__cont">
+        <h2 class="pink">THE ALLとは<span>株式会社ジ・オールが運営するダイレクトショッピングモールです</span></h2>
+        <p>小売店及び製造業が直接に消費者との取引するモールで個が主役となり<br>個と個の自然なふれあいで居心地の良さを感じさせるモール</p>
+        <div class="dealer__cont__box">
+            <h3>ジ・オール　モール出店プラン</h3>
+            <div class="tag tag01">
+                <div>基本出店料は0円</div>
+                <div>システム利用料は<br>売上の8％～15％</div>
+                <div>画像容量は標準10Ｇ</div>
+            </div>
+            <p class="pink">※初回ご契約時に初期登録費用30,000円～50,000円をお支払いいただきます。</p>
+            <h3>オプション費用</h3>
+            <div class="tag tag02">
+                <div>画像容量は標準50Ｇまで<br>＋10,000円</div>
+                <div>画像容量は標準100Ｇまで<br>+15,000円</div>
+            </div>
+        </div>
+        <h3>出店申し込み</h3>
+        <p>ジオールモールはＤ２Ｃの可能性を広げていきます。<br>より多くの販売機会を低コストで作り出すことが出来るモールです。</p>
+        <div class="cta"><a href="{{ path('malldevel_shop_register') }}">出店するなら今すぐクリック！！</a></div>
+    </div>
+{% endblock %}

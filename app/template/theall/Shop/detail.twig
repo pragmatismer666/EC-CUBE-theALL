@@ -1,0 +1,202 @@
+{% extends 'default_frame.twig' %}
+
+{% set page_name = 'shopdetail' %}
+
+{% block main %}
+    <div class="shopdetail-page__cont__main">
+        <div class="container">
+            <div class="shopdetail-page__cont__main__head">
+                <div class="img"><img src="{{ asset(Shop.LogoPath|no_image_product, 'save_image') }}" alt="ロゴ画像"></div>
+                <h1>{{ Shop.name }}</h1>
+            </div>
+            <div class="shopdetail-page__cont__main__body">
+                {# <div class="img"><img src="img/047.png" alt=""></div>
+                <div class="text">
+                    <p>ショップのPRテキストが入りますショップのPRテキストが入りますショップのPRテキストが入りますショップのPRテキストが入りますショップのPRテキストが入りますショップのPRテキストが入りますショップのPRテキストが入りますショップのPRテキストが入りますショップのPRテキストが入りますショップのPRテキストが入ります</p>
+                </div>
+                <div class="video">
+                    <video src=""></video>
+                </div> #}
+
+                {{ Shop.hp|raw }}
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="shopdetail-page__cont__items">
+            <h2>商品一覧</h2>
+            <div class="item-list">
+            {% for Product in Pagination %}
+                <div class="item-list__item">
+                    <a href="{{ url('product_detail', {'id': Product.id}) }}">
+                        <div class="img"><img src="{{ asset(Product.main_list_image|no_image_product, 'save_image') }}" alt=""></div>
+                        <h4 class="title">{{ Product.Shop.name|default(Product.name) }}</h4>
+                        <p>{{ Product.name }}</p>
+                        <div class="price">
+                        {% if Product.hasProductClass %}
+                            {% if Product.getPrice02Min == Product.getPrice02Max %}
+                                {{ Product.getPrice02IncTaxMin|price }}
+                            {% else %}
+                                {{ Product.getPrice02IncTaxMin|price }} ～ {{ Product.getPrice02IncTaxMax|price }}
+                            {% endif %}
+                        {% else %}
+                            {{ Product.getPrice02IncTaxMin|price }}
+                        {% endif %}
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+            </div>
+            <div class="pagination">
+                {# <a class="prev" href=""><</a>
+                <span>1</span>
+                <a href="">2</a>
+                <a href="">3</a>
+                <a href="">4</a>
+                <a href="">5</a>
+                ...
+                <a href="">30</a>
+                <a class="next" href="">></a> #}
+                {# {% include "pager.twig" with {'pages': Pagination.paginationData} %} #}
+                {% set pages = Pagination.paginationData %}
+
+                {% if pages.pageCount > 1 %}
+                    
+                        {# 最初へ #}
+                        {% if pages.firstPageInRange != 1 %}
+                                <a 
+                                    class="prev"
+                                    href="{{ path(
+                                    app.request.attributes.get('_route'),
+                                    app.request.query.all|merge({'pageno': pages.first, 'id' : Shop.id })) }}">
+                                    {{ '最初へ'|trans }}
+                                </a>
+                        {% endif %}
+
+                        {# 前へ #}
+                        {% if pages.previous is defined %}
+                            {# <li class="ec-pager__item"> #}
+                                <a class="prev" href="{{ path(
+                                    app.request.attributes.get('_route'),
+                                    app.request.query.all|merge({'pageno': pages.previous, 'id' : Shop.id })) }}">{{ '前へ'|trans }}</a>
+                            {# </li> #}
+                        {% endif %}
+
+                        {# 1ページリンクが表示されない場合、「...」を表示 #}
+                        {% if pages.firstPageInRange != 1 %}
+                            {# <li class="ec-pager__item"> #}
+                            ...
+                            {# </li> #}
+                        {% endif %}
+
+                        {% for page in pages.pagesInRange %}
+                            {% if page == pages.current %}
+                                {# <li class="ec-pager__item--active"> #}
+                                    <span>{{ page }} </span>
+                                {# </li> #}
+                            {% else %}
+                                {# <li class="ec-pager__item"> #}
+                                    <a href="{{ path(
+                                        app.request.attributes.get('_route'),
+                                        app.request.query.all|merge({'pageno': page, 'id' : Shop.id })) }}"> {{ page }} </a>
+                                {# </li> #}
+                            {% endif %}
+                        {% endfor %}
+
+                        {# 最終ページリンクが表示されない場合、「...」を表示 #}
+                        {% if pages.last != pages.lastPageInRange %}
+                            {# <li class="ec-pager__item"> #}
+                            ...
+                            {# </li> #}
+                        {% endif %}
+
+                        {# 次へ #}
+                        {% if pages.next is defined %}
+                            {# <li class="ec-pager__item"> #}
+                                <a class="next" href="{{ path(
+                                    app.request.attributes.get('_route'),
+                                    app.request.query.all|merge({'pageno': pages.next, 'id' : Shop.id })) }}">{{ '次へ'|trans }}</a>
+                            {# </li> #}
+                        {% endif %}
+
+                        {# 最後へ #}
+                        {% if pages.last != pages.lastPageInRange %}
+                            {# <li class="ec-pager__item"> #}
+                                <a class="next" href="{{ path(
+                                app.request.attributes.get('_route'),
+                                app.request.query.all|merge({'pageno': pages.last, 'id' : Shop.id })) }}">{{ '最後へ'|trans }}</a>
+                            {# </li> #}
+                        {% endif %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+        {% if ShopBlogs|length > 0 %}
+        <div class="news">
+            <h2>ショップからのお知らせ</h2>
+            <div class="news__box">
+                <ul>
+                    {% for ShopBlog in ShopBlogs %}
+                        <li>
+                            <span class="date">{{ ShopBlog.publish_date|date("Y/m/d") }}</span>
+                            <a href="{{ url('malldevel_front_shop_blog', {id: ShopBlog.id}) }}">{{ ShopBlog.title }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+        <div class="about">
+            <h2>会社概要</h2>
+            <div class="container">
+                <table>
+                    <tr>
+                        <th>会社名</th>
+                        <td>{{ Shop.Name }}</td>
+                    </tr>
+                    <tr>
+                        <th>本社</th>
+                        <td>〒{{ Shop.PostalCode }} {{ Shop.Addr01 }} {{Shop.Addr02}}</td>
+                    </tr>
+                    <tr>
+                        <th>代表者</th>
+                        <td>{{ Shop.representative }}</td>
+                    </tr>
+                    <tr>
+                        <th>設立</th>
+                        <td>{{ Shop.FoundedAt|date('Y-m-d') }}</td>
+                    </tr>
+                    <tr>
+                        <th>資本金</th>
+                        <td>{{ Shop.Capital }}</td>
+                    </tr>
+                    <tr>
+                        <th>連絡先</th>
+                        <td>{{ Shop.Contact }}<br>ただし、THE ALLのお問い合わせについては、「THE ALLカスタマーサポートセンター」（000-0000-0000）にご連絡ください。</td>
+                    </tr>
+                </table>
+                <p style="white-space: pre-line">{{ Shop.intro }} </p>
+                <p><a class="pink" href="{{ path('malldevel_shop_transaction_law', {'id': Shop.id}) }}" target="_blank"> <b>※特定商取引法に基づく表記（支払・配送・返品等）はこちらをご覧ください。</b></a></p>
+                <div class="about__image">
+                    {% for image in Shop.ShopPhotos %}
+                    <div style="margin-left: 10px; margin-right: 10px;"><img src="{{ asset(image.file_name, 'save_image') }}" alt=""></div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% if Shop.GmapEnabled %}
+            <div class="container" style="margin-top: 50px;">
+                <div class="mapouter">
+                    <div class="gmap_canvas">
+                        <iframe width="100%" height="500" id="gmap_canvas" src="https://maps.google.com/maps?q=〒{{ Shop.PostalCode }} {{ Shop.Addr01 }} {{Shop.Addr02}}&t=&z=10&ie=UTF8&iwloc=&output=embed" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe>
+                        <a href="https://123movies-to.org">123movies</a><br>
+                        <style>.mapouter{position:relative;text-align:right;height:500px;width:100%;}</style>
+                        <a href="https://www.embedgooglemap.net"></a>
+                        <style>.gmap_canvas {overflow:hidden;background:none!important;height:500px;width:100%;}</style>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        <div class="back-link"><a href="{{ path('malldevel_front_shop_list') }}">ショップ一覧に戻る</a></div>
+    </div>
+{% endblock %}

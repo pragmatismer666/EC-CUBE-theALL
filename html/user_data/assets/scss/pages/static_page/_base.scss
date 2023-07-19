@@ -1,0 +1,38 @@
+.ec-pageHeader h1 {
+  font-size: $font-size-33 !important;
+}
+
+.static-page {
+  .ec-layoutRole__main {
+    padding-left: 70px;
+    padding-right: 70px;
+    padding-bottom: 90px;
+    .ec-pageHeader {
+      padding: 0 !important;
+      margin: 0 !important;
+      text-align: unset !important;
+      h1 {
+        text-align: center;
+        margin-top: calc(#{$line-spacing-42} - 0.75rem - 1rem);
+        margin-bottom: $line-spacing-70;
+        border: 0 !important;
+        padding: 0 !important;
+      }
+    }
+    .ec-off1Grid {
+      .ec-off1Grid__cell {
+        width: 100% !important;
+        margin-left: 0 !important;
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 992px) {
+  .static-page {
+    .ec-layoutRole__main {
+      padding-left: 0px;
+      padding-right: 0px;
+    }
+  }
+}

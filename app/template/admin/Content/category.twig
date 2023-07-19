@@ -1,0 +1,267 @@
+{% extends '@admin/default_frame.twig' %}
+
+{% set menus = ['content', 'category'] %}
+
+{% block title %}
+    {{ ('malldevel.admin.content.' ~ ns)|trans }}
+{% endblock %}
+{% block sub_title %}{{ 'malldevel.admin.content.category'|trans }}{% endblock %}
+
+{% form_theme form '@admin/Form/bootstrap_4_horizontal_layout.html.twig' %}
+
+{% block javascript %}
+    <script src="{{ asset('assets/js/vendor/jquery.ui/jquery.ui.core.min.js', 'admin') }}"></script>
+    <script src="{{ asset('assets/js/vendor/jquery.ui/jquery.ui.widget.min.js', 'admin') }}"></script>
+    <script src="{{ asset('assets/js/vendor/jquery.ui/jquery.ui.mouse.min.js', 'admin') }}"></script>
+    <script src="{{ asset('assets/js/vendor/jquery.ui/jquery.ui.sortable.min.js', 'admin') }}"></script>
+    <script>
+        $(function () {
+            const oldSortNos = [];
+            $('.sortable-item').each(function () {
+                oldSortNos.push(this.dataset.sortNo);
+            });
+            oldSortNos.sort(function (a, b) {
+                return a - b;
+            }).reverse();
+
+            const updateSortNo = function () {
+                const newSortNos = {};
+                let i = 0;
+                $('.sortable-item').each(function () {
+                    newSortNos[this.dataset.id] = oldSortNos[i];
+                    i++;
+                });
+                $.ajax({
+                    url: '{{ url('malldevel_admin_content_category_move_sort_no') }}',
+                    type: 'POST',
+                    data: newSortNos
+                }).always(function () {
+                    $(".modal-backdrop").remove();
+                });
+            };
+
+            const redrawDisableAllows = function () {
+                const items = $('.sortable-item');
+                items.find('a.action-up').removeClass('disabled');
+                items.find('a.action-down').removeClass('disabled');
+                items.first().find('a.action-up').addClass('disabled');
+                items.last().find('a.action-down').addClass('disabled');
+            };
+
+            const moveSortNo = function () {
+                $('body').append($('<div class="modal-backdrop show"></div>'));
+                updateSortNo();
+                redrawDisableAllows();
+            };
+
+            $('.sortable-container').sortable({
+                items: '> .sortable-item',
+                cursor: 'move',
+                update: function (e, ui) {
+                    moveSortNo();
+                }
+            });
+
+            $('.sortable-item').on('click', 'a.action-up', function (e) {
+                e.preventDefault();
+                var current = $(this).parents("li");
+                if (current.prev().hasClass('sortable-item')) {
+                    current.prev().before(current);
+                    moveSortNo();
+                }
+            });
+
+            $('.sortable-item').on('click', 'a.action-down', function (e) {
+                e.preventDefault();
+                var current = $(this).parents("li");
+                if (current.next().hasClass('sortable-item')) {
+                    current.next().after(current);
+                    moveSortNo();
+                }
+            });
+
+            const groupItem = $('.list-group-item');
+            groupItem.on('click', 'a.action-edit', function (e) {
+                e.preventDefault();
+                var current = $(this).parents('li');
+                current.find('.mode-view').addClass('d-none');
+                current.find('.mode-edit').removeClass('d-none');
+            });
+
+            groupItem.on('click', 'button.action-edit-cancel', function (e) {
+                e.preventDefault();
+                var current = $(this).parents('li');
+                current.find('[data-origin-value]').each(function (e) {
+                    $(this).val($(this).attr('data-origin-value'));
+                });
+                current.find('.mode-view').removeClass('d-none');
+                current.find('.mode-edit').addClass('d-none');
+            });
+
+            groupItem.find('.is-invalid').each(function (e) {
+                e.preventDefault();
+                var current = $(this).parents("li");
+                current.find('.mode-view').addClass('d-none');
+                current.find('.mode-edit').removeClass('d-none');
+            });
+
+            $('#DeleteModal').on('shown.bs.modal', function (event) {
+                const target = $(event.relatedTarget);
+                // hrefの変更
+                $(this).find('[data-method="delete"]').attr('href', target.data('url'));
+
+                // messageの変更
+                $(this).find('p.modal-message').text(target.data('message'));
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block main %}
+    <div class="c-contentsArea__cols">
+        <div class="c-contentsArea__primaryCol">
+            <div id="ex-primaryCol" class="c-primaryCol">
+                <div class="card rounded border-0 mb-4">
+                    <div class="card-body p-0">
+                        <div class="card rounded border-0">
+                            <ul class="list-group list-group-flush sortable-container">
+                                <li class="list-group-item">
+                                    <form role="form" name="form1" id="form1" method="post"
+                                          action="{% if TargetCategory.id %}{{ path('malldevel_admin_content_category_edit_' ~ ns, {id: TargetCategory.id}) }}{% else %}{{ url('malldevel_admin_content_category_' ~ ns) }}{% endif %}"
+                                          enctype="multipart/form-data"
+                                    >
+                                        {{ form_widget(form._token) }}
+                                        <div class="form-row mb-3">
+                                            <div class="col-auto">
+                                                {{ form_widget(form.name) }}
+                                                {{ form_errors(form.name) }}
+                                            </div>
+                                            <div class="col-auto">
+                                                <button class="btn btn-ec-regular" type="submit">{{ 'admin.common.create__new'|trans }}</button>
+                                            </div>
+                                        </div>
+                                        {% for f in form if f.vars.eccube_form_options.auto_render %}
+                                            {% if f.vars.eccube_form_options.form_theme %}
+                                                {% form_theme f f.vars.eccube_form_options.form_theme %}
+                                                {{ form_row(f) }}
+                                            {% else %}
+                                                <div class="form-row mb-3">
+                                                    <div class="col-3">
+                                                        <span>{{ f.vars.label|trans }}</span>
+                                                    </div>
+                                                    <div class="col">
+                                                        {{ form_widget(f) }}
+                                                        {{ form_errors(f) }}
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </form>
+                                </li>
+                                <li class="list-group-item">
+                                    <div class="row">
+                                        <div class="col-auto"><strong> </strong></div>
+                                        <div class="col-auto"><strong>{{ 'admin.common.id'|trans }}</strong></div>
+                                        <div class="col-2"><strong>{{ 'malldevel.admin.content.category.title'|trans }}</strong></div>
+                                    </div>
+                                </li>
+                                {% for Category in Categories %}
+                                    <li id="ex-category-{{ Category.id }}" class="list-group-item sortable-item" data-id="{{ Category.id }}" data-sort-no="{{ Category.sort_no }}">
+                                        {% if Category.id != TargetCategory.id %}
+                                            <div class="row justify-content-around mode-view">
+                                                <div class="col-auto d-flex align-items-center"><i class="fa fa-bars text-ec-gray"></i></div>
+                                                <div class="col-auto d-flex align-items-center">{{ Category.id }}</div>
+                                                <div class="col d-flex align-items-center">{{ Category.name }}</div>
+                                                <div class="col-auto text-right">
+                                                    <a class="btn btn-ec-actionIcon action-up mr-2 {% if loop.first %} disabled {% endif %}" href=""
+                                                       data-tooltip="true" data-placement="top"
+                                                       title="{{ 'admin.common.up'|trans }}">
+                                                        <i class="fa fa-arrow-up fa-lg text-secondary"></i>
+                                                    </a>
+                                                    <a class="btn btn-ec-actionIcon action-down mr-2 {% if loop.last %} disabled {% endif %}" href=""
+                                                       data-tooltip="true" data-placement="top"
+                                                       title="{{ 'admin.common.down'|trans }}">
+                                                        <i class="fa fa-arrow-down fa-lg text-secondary"></i>
+                                                    </a>
+                                                    <a class="btn btn-ec-actionIcon mr-2 action-edit"
+                                                       href="{{ url('malldevel_admin_content_category_edit_' ~ ns, {id: Category.id}) }}"
+                                                       data-tooltip="true" data-placement="top"
+                                                       title="{{ 'admin.common.edit'|trans }}">
+                                                        <i class="fa fa-pencil fa-lg text-secondary"></i>
+                                                    </a>
+                                                    <div class="d-inline-block mr-2" data-tooltip="true" data-placement="top"
+                                                         title="{{ 'admin.common.delete'|trans }}">
+                                                        <a class="btn btn-ec-actionIcon{% if Category.hasBlogs %} disabled{% endif %}"
+                                                           data-toggle="modal" data-target="#DeleteModal"
+                                                           data-url="{{ url('malldevel_admin_content_category_delete', {id: Category.id}) }}"
+                                                           data-message="{{ 'admin.common.delete_modal__message'|trans({ "%name%" : Category.name }) }}">
+                                                            <i class="fa fa-close fa-lg text-secondary"></i>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <form class="form-row d-none mode-edit" method="POST" action="{{ url('malldevel_admin_content_category_' ~ ns) }}" enctype="multipart/form-data">
+                                                {{ form_widget(forms[Category.id]._token) }}
+                                                <div class="col-auto align-items-center">
+                                                    {{ form_widget(forms[Category.id].name, {'attr': {'data-origin-value': forms[Category.id].name.vars.value}}) }}
+                                                    {{ form_errors(forms[Category.id].name) }}
+                                                </div>
+                                                <div class="col-auto align-items-center">
+                                                    <button class="btn btn-ec-conversion" type="submit">{{ 'admin.common.decision'|trans }}</button>
+                                                </div>
+                                                <div class="col-auto align-items-center">
+                                                    <button class="btn btn-ec-sub action-edit-cancel" type="button">{{ 'admin.common.cancel'|trans }}</button>
+                                                </div>
+                                                {% for f in forms[Category.id] if f.vars.eccube_form_options.auto_render %}
+                                                    <div class="col-auto align-items-center" style="width:90%; padding-top: 10px;">
+                                                        <div class="row">
+                                                            <div class="col-3">
+                                                                <span>{{ f.vars.label|trans }}</span>
+                                                            </div>
+                                                            <div class="col-9">
+                                                                {{ form_widget(f) }}
+                                                                {{ form_errors(f) }}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </form>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                            <div class="modal fade" id="DeleteModal" tabindex="-1" role="dialog"
+                                 aria-labelledby="DeleteModal" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title font-weight-bold">
+                                                {{ 'admin.common.delete_modal__title'|trans }}
+                                            </h5>
+                                            <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">×</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body text-left">
+                                            <p class="text-left modal-message"><!-- jsでメッセージを挿入 --></p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button class="btn btn-ec-sub" type="button" data-dismiss="modal">
+                                                {{ 'admin.common.cancel'|trans }}
+                                            </button>
+                                            <a class="btn btn-ec-delete" href="#" {{ csrf_token_for_anchor() }}
+                                               data-method="delete" data-confirm="false">
+                                                {{ 'admin.common.delete'|trans }}
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p>{{ 'admin.common.drag_and_drop_description'|trans }}</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

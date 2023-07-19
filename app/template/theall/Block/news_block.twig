@@ -1,0 +1,22 @@
+{% set Blogs = front_service.getDisplayNotices() %}
+{% if Blogs|length > 0 %}
+    <section class="news">
+        <div class="container">
+            <div class="section__ttl pc-content">
+                <h3>お知らせ</h3><a href="{{ url('malldevel_front_blog_notice') }}">一覧を見る<span>＞</span></a>
+            </div>
+            <div class="news__box">
+                <h3 class="sp-content">お知らせ</h3>
+                <ul>
+                    {% for Blog in Blogs %}
+                        <li>
+                            <span class="date">{{ Blog.publish_date|date("Y/m/d") }}</span>
+                            <span class="cat">{{ Blog.Category.name }}</span>
+                            <a href="{{ url('malldevel_front_blog_view', {id: Blog.id}) }}">{{ Blog.title }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </section>
+{% endif %}

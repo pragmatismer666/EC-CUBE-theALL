@@ -1,0 +1,70 @@
+{% extends 'default_frame.twig' %}
+{% block title %}
+<h1>{{ Series.name }}</h1>
+{% endblock %}
+{% block stylesheet %}
+<style>
+.series-item-desc {
+    overflow-wrap: anywhere;
+    margin-bottom: 70px;
+}
+.series-item-top-image {
+    margin-bottom: 30px;
+}
+{# .img img {
+    width: 100%;
+    max-height: 150px;
+    object-fit: cover;
+} #}
+.ec-shelfGrid .ec-shelfGrid__item {
+    margin-right: 0;
+}
+@media only screen and (min-width: 768px) {
+    .ec-shelfGrid .ec-shelfGrid__item {
+        width: 33.33%;
+    }
+}
+
+</style>
+{% endblock %}
+
+{% block main %}
+<div class="series-item-top-image">
+    <img src="{{ asset(Series.ThumbnailPath, 'save_image') }}">
+</div>
+
+<div class="series-item-desc">
+{{ Series.description|raw }}
+</div>
+<section class="series-product-list">
+    <h4>{{ Series.name }}おすすめ商品</h4>
+{% if Products|length > 0 %}
+    {# <div class="item-list"> #}
+    <div class="ec-shelfRole">
+        <ul class="ec-shelfGrid item-list">
+        {% for Product in Products %}
+            <li class="ec-shelfGrid__item item-list__item">
+                <a href="{{ url('product_detail', {'id': Product.id}) }}">
+                    <div class="img"><img src="{{ asset(Product.main_list_image|no_image_product, 'save_image') }}"></div>
+                    <h4 class="title">{{ Product.Shop.name|default(Product.name) }}</h4>
+                    <p>{{ Product.name }}</p>
+                    <p class="price02-default price">
+                        {% if Product.hasProductClass %}
+                            {% if Product.getPrice02Min == Product.getPrice02Max %}
+                                {{ Product.getPrice02IncTaxMin|price }}
+                            {% else %}
+                                {{ Product.getPrice02IncTaxMin|price }} ～ {{ Product.getPrice02IncTaxMax|price }}
+                            {% endif %}
+                        {% else %}
+                            {{ Product.getPrice02IncTaxMin|price }}
+                        {% endif %}
+                    </p>
+                </a>
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+    <div class="default-btn"><a href="{{ url('product_list') }}?series_id={{ Series.id }}">商品をもっと見る</a></div>
+{% endif %}
+</section>
+{% endblock %}

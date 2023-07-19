@@ -1,0 +1,86 @@
+{% extends 'default_frame.twig' %}
+
+{% set page_name = 'blogarchive' %}
+
+{% block main %}
+    <div class="blog-list">
+        {% for Blog in Blogs %}
+            <div class="blog-list__item">
+                <a href="{{ url('malldevel_front_blog_view', {id: Blog.id}) }}">
+                    <div class="img">
+                        <img
+                            src="{% if Blog.thumbnail %}{{ asset('admin/' ~ Blog.thumbnail, 'save_image') }}{% else %}{{ asset(''|no_image_product, 'save_image') }}{% endif %}"
+                            alt="{{ Blog.title }}">
+                    </div>
+                    <div class="meta">
+                        <div class="date">{{ Blog.publish_date|date("Y/m/d") }}</div>
+                        <div class="cat">{{ Blog.Category.name|default('') }}</div>
+                    </div>
+                    <p>{{ Blog.title }}</p>
+                </a>
+                <ul class="tag-list">
+                    {% for BlogTag in Blog.BlogTags %}
+                        <li><a href="{{ url('malldevel_front_blog_tag_' ~ ns, {tag_id: BlogTag.Tag.id}) }}">#{{ BlogTag.Tag.name|default('') }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        (function() {
+            const breadcrumbs = `
+                <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <a itemprop="item" href="{{ url('malldevel_front_blog_' ~ ns) }}">
+                        <span itemprop="name">{{ BlogType.name }}</span>
+                    </a>
+                    <meta itemprop="position" content="2">
+                </li>
+                {% if Category is not empty %}
+                <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <a itemprop="item" href="{{ url('malldevel_front_blog_category_' ~ ns) }}">
+                        <span itemprop="name">{{ Category.name }}</span>
+                    </a>
+                    <meta itemprop="position" content="3">
+                </li>
+                {% endif %}
+                {% if Tag is not empty %}
+                <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <a itemprop="item" href="{{ url('malldevel_front_blog_tag_' ~ ns) }}">
+                        <span itemprop="name">#{{ Tag.name }}</span>
+                    </a>
+                    <meta itemprop="position" content="4">
+                </li>
+                {% endif %}
+            `;
+            $(".breadcrumb").append(breadcrumbs);
+        })();
+    </script>
+{% endblock %}
+
+{% block stylesheet %}
+    <style>
+        .blog-list .img img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+        }
+        @media(max-width: 992px) {
+            .blog-list .img img {
+                height: 96px;
+            }
+        }
+        @media(max-width: 768px) {
+            .blog-list .img img {
+                height: 211px;
+            }
+        }
+        @media(max-width: 576px) {
+            .blog-list .img img {
+                height: 144px;
+            }
+        }
+    </style>
+{% endblock %}

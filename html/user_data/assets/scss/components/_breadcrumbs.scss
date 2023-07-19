@@ -1,0 +1,13 @@
+.breadcrumbs{
+  ol.breadcrumb{
+    li, li a{
+      color: $color-141414 !important;
+      font-size: $font-size-14 !important;
+      font-weight: $font-weight-medium;
+    }
+
+    li a.text-underline{
+      text-decoration: underline;
+    }
+  }
+}

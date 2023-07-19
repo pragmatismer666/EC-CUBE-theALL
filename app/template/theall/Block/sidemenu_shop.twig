@@ -1,0 +1,91 @@
+
+<div class="row-sidebar__left__item">
+	{% set SeriesList = repository('Customize\\Entity\\Master\\Series').getList() %}
+	<h4>シリーズから探す</h4>
+	<div>
+		<ul>
+			{% for Series in SeriesList %}
+			<li><a href="{{ path('malldevel_front_series_detail', { 'id' : Series.id }) }}">{{ Series.name }}</a></li>
+			{% endfor %}
+		</ul>
+		<div class="mini-more"><a href="{{ path('malldevel_front_series_list') }}">一覧を見る＞</a></div>
+	</div>
+</div>
+<div class="row-sidebar__left__item">
+	<h4>カテゴリーから探す</h4>
+	{% set Categories = repository('Eccube\\Entity\\Category').list %}
+	<div>
+		<ul class="arrow-list">
+            {% from _self import tree %}
+		    {% for Category in Categories %}
+                <li>
+                    {{ tree(Category) }}
+                </li>
+            {% endfor %}
+		</ul>
+		<div class="mini-more"><a href="{{ url('malldevel_front_category') }}">一覧を見る＞</a></div>
+	</div>
+</div>
+<div class="row-sidebar__left__item">
+  	<h4>ショップから探す</h4>
+	<div>
+		<div class="mini-more"><a href="{{ url('malldevel_front_shop_list') }}">一覧を見る＞</a></div>
+	</div>
+</div>
+
+{% macro tree(Category) %}
+	{% from _self import tree %}
+    <div {% if Category.children|length > 0 %}class="dropdown"{% endif %}>
+		<a href="{{ url('product_list') }}?category_id={{ Category.id }}"
+                {% if Category.children|length > 0 %}
+					class="navbar-toggle collapsed" data-toggle="collapse" aria-expanded="false"
+					aria-controls="navbar" data-target="#category_{{ Category.id }}__submenu"
+                {% endif %}
+		>
+            {{ Category.name }}
+		</a>
+        {% if Category.children|length > 0 %}
+			<ul id="category_{{ Category.id }}__submenu" class="dropdown-menu dropdown-menu-right">
+                {% for ChildCategory in Category.children %}
+					<li>
+                        {{ tree(ChildCategory) }}
+					</li>
+                {% endfor %}
+			</ul>
+        {% endif %}
+	</div>
+{% endmacro %}
+
+<style>
+	.arrow-list li {
+		position: relative;
+	}
+	.arrow-list li:hover > div > a,
+	.arrow-list li:hover > div > a:after {
+		color: #CB1569;
+	}
+	.arrow-list li:hover > div > a:after {
+		border-color: #CB1569;
+	}
+	.navbar-toggle {
+		float: unset;
+		padding: unset;
+		margin-right: unset;
+		margin-top: unset;
+		margin-bottom: unset;
+	}
+	@media only screen and (min-width: 768px) {
+		.dropdown:hover > .dropdown-menu {
+			display: block;
+		}
+	}
+	.row-sidebar__left__item ul.dropdown-menu {
+		top: -30px;
+		width: 240px;
+		right: -120px;
+		padding: 20px 20px 10px 20px!important;
+	}
+	.row-sidebar__left__item ul.arrow-list .dropdown li a:after {
+		display: none;
+	}
+</style>

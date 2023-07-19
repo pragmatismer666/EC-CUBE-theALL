@@ -1,0 +1,399 @@
+{#
+This file is part of EC-CUBE
+
+Copyright(c) EC-CUBE CO.,LTD. All Rights Reserved.
+
+http://www.ec-cube.co.jp/
+
+For the full copyright and license information, please view the LICENSE
+file that was distributed with this source code.
+#}
+{% extends '@admin/default_frame.twig' %}
+
+{% set menus = ['product', 'product_edit'] %}
+
+{% block title %}{{ 'admin.product.product_registration'|trans }}{% endblock %}
+{% block sub_title %}{{ 'admin.product.product_management'|trans }}{% endblock %}
+
+
+{% block stylesheet %}
+    <link rel="stylesheet" href="{{ asset('assets/css/fileupload/jquery.fileupload.css', 'admin') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/fileupload/jquery.fileupload-ui.css', 'admin') }}">
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <style>
+        #thumb div {
+            float: left;
+            margin: 4px
+        }
+
+        .ui-state-highlight {
+            height: 70px;
+            width: 70px;
+            border: dashed 1px #ccc;
+            background: #fff;
+        }
+        .ec-error {
+            padding: 7px 15px;
+            border: 1px solid #e87373;
+            border-radius: 5px;
+            background: #f7e4e4;
+            display: none;
+        }
+        .img-commitment {
+            width: 80px;
+            height: 45px;
+            object-fit: cover;
+        }
+    </style>
+{% endblock stylesheet %}
+
+
+{% block javascript %}
+    <script src="{{ asset('assets/js/vendor/fileupload/vendor/jquery.ui.widget.js', 'admin') }}"></script>
+    <script src="{{ asset('assets/js/vendor/fileupload/jquery.iframe-transport.js', 'admin') }}"></script>
+    <script src="{{ asset('assets/js/vendor/fileupload/jquery.fileupload.js', 'admin') }}"></script>
+    <script src="{{ asset('assets/js/vendor/fileupload/jquery.fileupload-process.js', 'admin') }}"></script>
+    <script src="{{ asset('assets/js/vendor/fileupload/jquery.fileupload-validate.js', 'admin') }}"></script>
+    <script>var bootstrapTooltip = $.fn.tooltip.noConflict();</script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script>
+        $.fn.tooltip = bootstrapTooltip;
+        $(document).on('drop dragover', function(e) {
+            e.preventDefault();
+        });
+        $(function() {
+            var proto_img = '<div class="c-form__fileUploadThumbnail" style="background-image:url(\'__path__\');" data-src="__src__">' +
+                '<a class="delete-image"><i class="fa fa-times" aria-hidden="true"></i></a>' +
+                '</div>';
+            var proto_del = '{{ form_widget(form.delete_images.vars.prototype) }}';
+            var proto_add = '{{ form_widget(form.image) }}';
+
+            var $new_form = $("#new-commitment-form")
+
+// #new-commitment
+            var dropZoneInit = function(parent) {
+
+                $(parent + " #file-input").fileupload({
+                    url: "{{ url('malldevel_admin_image_temp_upload') }}",
+                    type: "post",
+                    sequentialUploads: true,
+                    dataType: 'json',
+                    dropZone: $(parent + ' #upload-zone'),
+                    done: function(e, data) {
+                        $(parent + " .progress").hide();
+
+                        $(parent + " #thumb div.c-form__fileUploadThumbnail").each(function(i, obj) {
+                            deleteImage(obj)
+                        })
+
+                        $.each(data.result.files, function(index, file) {
+                            var path = '{{ asset('', 'temp_image') }}' + file;
+                            var $img_thumb = $(proto_img.replace(/__path__/g, path).replace(/__src__/g, file));
+                            var $new_img = $(proto_add);
+                            $new_img.val(file);
+                            $child = $img_thumb.append($new_img);
+                            $(parent + ' #thumb').append($child);
+                            addDeleteListener();
+                        });
+                    },
+                    fail: function(e, data) {
+                        $(parent + " .progress").hide()
+                        $(parent + " .progress .progress-bar").width("0%")
+                    },
+                    start: function(e, data) {
+                        $(parent + " .progress").show();
+                    },
+                    acceptFileTypes: /(\.|\/)(gif|jpe?g|png)$/i,
+                    maxFileSize: 10000000,
+                    maxNumberOfFiles: 10,
+                    progressall: function(e, data) {
+                        var progress = parseInt(data.loaded / data.total * 100, 10);
+                        $(parent + ' .progress .progress-bar').css(
+                            'width',
+                            progress + '%'
+                        );
+                    },
+                    processalways: function(e, data) {
+                        if (data.files.error) {
+                            alert("{{ 'admin.common.upload_error'|trans }}");
+                        }
+                    }
+                })
+                $(parent + " .file-input-click").on("click", function() {
+                    $(parent + " #file-input").click();
+                })
+                var count_del = 0;
+                var deleteImage = function(thumbnail) {
+                    var $new_delete_image = $(proto_del.replace(/__name__/g, count_del));
+                    var src = $(thumbnail).data("src");
+                    $new_delete_image.val(src);
+                    $(parent + " #thumb").append($new_delete_image);
+                    $(thumbnail).remove();
+                    count_del++;
+                }
+                var addDeleteListener = function() {
+                    $(parent + " #thumb .delete-image").on("click", function() {
+                        var thumbnail = $(this).parents('div.c-form__fileUploadThumbnail');
+                        deleteImage(thumbnail)
+                    })
+                }
+                return {
+                    deleteImage: addDeleteListener
+                }
+            }
+
+            dropZoneInit("#new-commitment");
+
+
+            // Delete Modal action
+            $('#DeleteModal').on('shown.bs.modal', function(event) {
+                var target = $(event.relatedTarget);
+                // hrefの変更
+                $(this).find('[data-method="delete"]').attr('href', target.data('url'));
+
+                // messageの変更
+                $(this).find('p.modal-message').text(target.data('message'));
+            });
+
+
+            {# init edit form #}
+            var $edit_form = $("#edit-commitment-form")
+            $edit_form.html($("#new-commitment-form").html());
+            var editCb = dropZoneInit("#edit-commitment-form");
+            $edit_form.find(".new-submit").text("{{ 'malldevel.admin.product.buyer_commitment__edit_save'|trans }}")
+
+            {% if EditingCommitment is defined and EditingCommitment %}
+            var $freshForm = $new_form
+            $edit_form.show();
+            {% else %}
+            var $freshForm = $edit_form
+            {% endif %}
+            $freshForm.find(".invalid-feedback").remove();
+            $freshForm.find(".form-control").removeClass("is-invalid").val("");
+
+            var initEditForm = function(actionUrl, data) {
+                var thumbnail = $edit_form.find("#thumb").html("");
+
+                $edit_form.attr("action", actionUrl);
+
+                if (data.image) {
+                    var path = '{{ asset('', 'save_image') }}' + data.image;
+                    var $img_thumb = $(proto_img.replace(/__path__/g, path).replace(/__src__/g, data.image));
+                    
+                    $('#edit-commitment-form #thumb').append($img_thumb);
+                    editCb.deleteImage();
+                }
+                if (data.title) {
+                    $edit_form.find("#{{ form.title.vars.id }}").val(data.title);
+                }
+
+                if (data.content) {
+                    $edit_form.find("#{{ form.content.vars.id }}").val(data.content);
+                }
+            }
+
+            $(".action-edit").on("click", function() {
+                var $this = $(this)
+                fetch($this.data('get-url'))
+                    .then(function(response) {
+                        return response.json();
+                    })
+                    .then(function(response) {
+                        if (response.success) {
+                            initEditForm($this.data('action-url'), response)
+                            $edit_form.show();
+                        }
+                    })
+            })
+        });
+    </script>
+{% endblock %}
+
+{% block main %}
+<div class="c-contentsArea__cols">
+    <div class="c-contentsArea__primaryCol">
+        <div class="c-primaryCol">
+            <div class="card rounded border-0 mb-4">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="d-inline-block">
+                                <span class="card-title">
+                                    {{ 'malldevel.admin.product.buyer_commitment.add_commitment'|trans }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-4 text-right">
+                            <a data-toggle="collapse" href="#new-commitment" aria-expanded="false"
+                                aria-controls="new-commitment">
+                                <i class="fa fa-angle-up fa-lg"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="collapse show ec-cardCollapse" id="new-commitment">
+                    <div class="card-body">
+                        <form id="new-commitment-form" action="{{ url('malldevel_admin_commitment_new', {product_id: Product.id}) }}" method="POST">
+                            {{ form_widget(form._token) }}
+                            <div class="row">
+                                <div class="col-4">
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="d-inline-block" data-tooltip="true" data-placement="top" title="{{ 'tooltip.product.image'|trans }}">
+                                                <span>{{ 'malldevel.admin.product.buyer_commitment__image'|trans }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col">
+                                            <div class="progress" style="display: none;">
+                                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <div id="thumb" class="c-form__fileUploadThumbnails clearfix"></div>
+                                            <p id="message"></p>
+                                            <div id="upload-zone" class="media py-5 border-ec-dashed mb-2 rounded">
+                                                <div class="media-body">
+                                                    <i class="fa fa-cloud-upload fa-3x text-ec-lightGray mx-3 align-middle" aria-hidden="true"></i>
+                                                    {{ 'admin.common.drag_and_drop_image_description'|trans }}
+                                                    <input type="file" accept="image/*" style="display: none;" id="file-input">
+                                                    <a class="btn btn-ec-regular mr-2 file-input-click">
+                                                        {{ 'admin.common.file_select'|trans }}
+                                                    </a>
+                                                </div><!-- /.media-body -->
+                                            </div><!-- /.media -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-8">
+                                    <div class="row mb-2">
+                                        <div class="col">
+                                            <label for="{{ form.title.vars.id }}">{{ 'malldevel.admin.product.buyer_commitment__title'|trans }}</label>
+                                            {{ form_widget(form.title) }}
+                                            {{ form_errors(form.title) }}
+                                            <div class="ec-error" for="{{ form.title.vars.id }}"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col">                                
+                                            <label for="{{ form.content.vars.id }}">{{ 'malldevel.admin.product.buyer_commitment__content'|trans }}</label>
+                                            {{ form_widget(form.content) }}
+                                            {{ form_errors(form.content) }}
+                                            <div class="ec-error" for="{{ form.content.vars.id }}"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col" style="text-align: center; margin-top: 20px;">
+                                    <button class="btn btn-ec-regular new-submit" style="min-width: 100px;">{{ 'malldevel.admin.product.buyer_commitment__create_button'|trans }}</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="card rounded border-0 mb-4">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="d-inline-block">
+                                <span class="card-title">
+                                    {{ 'malldevel.admin.product.buyer_commitment__card_title'|trans }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-4 text-right">
+                            <a data-toggle="collapse" href="#commitment-table" aria-expanded="false"
+                                aria-controls="commitment-table">
+                                <i class="fa fa-angle-up fa-lg"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="collapse show ec-cardCollapse" id="commitment-table">
+                    <div class="card-body">
+                        
+                        {% if Commitments|length == 0 %}
+                            <div class="empty-data">
+                                {{ "malldevel.admin.product.buyer_commitment.no_data"|trans }}
+                            </div>
+                        {% else %}
+                        <div id="commitment-edit" >
+                            <form id="edit-commitment-form" method="POST" style="display: none;">
+                            </form>
+                        </div>
+                        <ul class="list-group list-group-flush sortable-container">
+                            <li class="list-group-item" style="border: none;">
+                                <div class="row">
+                                    <div class="col-auto"><strong>&nbsp;</strong></div>
+                                    <div class="col-2"><strong>{{ 'malldevel.admin.product.buyer_commitment__title'|trans }}</strong></div>
+                                </div>
+                            </li>
+                            {% for Commitment in Commitments %}
+                            <li class="list-group-item" data-id="{{ Commitment.id }}">
+                                <div class="row justify-content-around mode-view">
+                                    <div class="col-auto d-flex align-items-center"><i class="fa fa-bars text-ec-gray"></i></div>
+                                    <div class="col d-flex align-items-center">
+                                        {% if Commitment.image %}
+                                        <img class="mr-2 img-commitment" src="{{ asset(Commitment.ImagePath, 'save_image') }}">
+                                        {% endif %}
+                                        {{ Commitment.title|truncate(20) }}
+                                    </div>
+                                    <div class="col-auto text-right">
+                                        <a class="btn btn-ec-actionIcon mr-2 action-edit"
+                                            data-action-url="{{ url('malldevel_admin_commitment_edit', {product_id: Product.id, commitment_id: Commitment.id}) }}"
+                                            data-get-url="{{ url('malldevel_admin_commitment_get', {product_id: Product.id, commitment_id: Commitment.id}) }}"
+                                            data-tooltip="true" data-placement="top"
+                                            title="{{ 'admin.common.edit'|trans }}">
+                                            <i class="fa fa-pencil fa-lg text-secondary"></i>
+                                        </a>
+                                        <div class="d-inline-block mr-2" data-tooltip="true" data-placement="top"
+                                                title="{{ 'admin.common.delete'|trans }}">
+                                            <a class="btn btn-ec-actionIcon"
+                                                data-url="{{ url('malldevel_admin_commitment_delete', {product_id: Product.id, commitment_id: Commitment.id}) }}"
+                                                data-toggle="modal" data-target="#DeleteModal"
+                                                data-message="{{ 'admin.common.delete_modal__message'|trans({ "%name%" : Commitment.title|truncate(10) }) }}">
+                                                <i class="fa fa-close fa-lg text-secondary"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="DeleteModal" tabindex="-1" role="dialog"
+            aria-labelledby="DeleteModal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title font-weight-bold">
+                        {{ 'admin.common.delete_modal__title'|trans }}
+                    </h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body text-left">
+                    <p class="text-left modal-message"><!-- jsでメッセージを挿入 --></p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-ec-sub" type="button" data-dismiss="modal">
+                        {{ 'admin.common.cancel'|trans }}
+                    </button>
+                    <a class="btn btn-ec-delete" href="#" {{ csrf_token_for_anchor() }}
+                        data-method="delete" data-confirm="false">
+                        {{ 'admin.common.delete'|trans }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

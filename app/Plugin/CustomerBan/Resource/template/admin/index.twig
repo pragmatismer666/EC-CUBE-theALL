@@ -1,0 +1,224 @@
+{% extends '@admin/default_frame.twig' %}
+
+{% block title %}{{ 'customer_ban.admin.master.title'|trans }}{% endblock %}
+{% block sub_title %}{{ 'customer_ban.admin.master.subtitle'|trans }}{% endblock %}
+
+{% set menus = ['customer', 'ban'] %}
+
+{% form_theme searchForm '@admin/Form/bootstrap_4_horizontal_layout.html.twig' %}
+
+{% block main %}
+    <form name="search_form" id="search_form" method="post" action="">
+        {{ form_widget(searchForm._token) }}
+        <div class="c-outsideBlock">
+            <div class="c-outsideBlock__contents">
+                <div class="row justify-content-start">
+                    <div class="col-6">
+                        <div class="mb-2">
+                            <label class="col-form-label" data-tooltip="true" data-placement="top" title="{{ 'tooltip.customer.multi_search_label'|trans }}">{{ 'admin.customer.multi_search_label'|trans }}<i class="fa fa-question-circle fa-lg ml-1"></i></label>
+                            {{ form_widget(searchForm.multi) }}
+                            {{ form_errors(searchForm.multi) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="c-outsideBlock__contents mb-5">
+                <button type="submit" class="btn btn-ec-conversion px-5">{{ 'admin.common.search'|trans }}</button>
+                {% if pagination %}
+                    <span class="font-weight-bold ml-2">{{ 'admin.common.search_result'|trans({'%count%':pagination.totalItemCount}) }}</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="c-contentsArea__cols">
+            <div class="c-contentsArea__primaryCol">
+                <div class="c-primaryCol">
+                    {% if pagination and pagination.totalItemCount %}
+                    <div class="row justify-content-between mb-2">
+                        <div class="col-6"></div>
+                        <div class="col-5 text-right">
+                            {#Dropdown page count#}
+                            <div class="d-inline-block mr-2">
+                                <select class="custom-select" onchange="location = this.value;">
+                                    {% for pageMax in pageMaxis %}
+                                        <option {% if pageMax.name == page_count %} selected {% endif %}
+                                                value="{{ path('admin_customer_page', {'page_no': 1, 'page_count': pageMax.name }) }}">
+                                            {{ 'admin.common.count'|trans({ '%count%': pageMax.name }) }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card rounded border-0 mb-4 d-block">
+                        <div class="card-body p-0">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th class="border-top-0 pt-2 pb-3 pl-3 text-nowrap">{{ 'admin.customer.customer_id'|trans }}</th>
+                                    <th class="border-top-0 pt-2 pb-3">{{ 'admin.common.name'|trans }}</th>
+                                    <th class="border-top-0 pt-2 pb-3">{{ 'admin.common.phone_number'|trans }}</th>
+                                    <th class="border-top-0 pt-2 pb-3">{{ 'admin.common.mail_address'|trans }}</th>
+                                    <th class="border-top-0 pt-2 pb-3">&nbsp;</th>
+                                    <th class="border-top-0 pt-2 pb-3 pr-3">&nbsp;</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for CustomerBan in pagination %}
+                                    {% set Customer = CustomerBan.Customer %}
+                                    <tr id="ex-customer-ban-{{ Customer.id }}">
+                                        <td class="align-middle pl-3">{{ Customer.id }}</td>
+                                        <td class="align-middle"><a href="{{ url('admin_customer_edit', { 'id': Customer.id}) }}">{{ Customer.name01 }}&nbsp;{{ Customer.name02 }}</a></td>
+                                        <td class="align-middle">{{ Customer.phone_number }}</td>
+                                        <td class="align-middle">{{ Customer.email }}</td>
+                                        <td class="align-middle"></td>
+                                        <td class="align-middle pr-3">
+                                            <div class="text-right">
+                                                {% if Customer.Status.id == constant('Eccube\\Entity\\Master\\CustomerStatus::PROVISIONAL') %}
+                                                    <div class="px-1 d-inline-block" data-tooltip="true" data-placement="top" title="{{ 'admin.customer.resend'|trans }}">
+                                                        <a class="btn btn-ec-actionIcon" data-toggle="modal" data-target="#discontinuance_cus_{{ Customer.id }}">
+                                                            <i class="fa fa-send fa-lg text-secondary" aria-hidden="true"></i>
+                                                        </a>
+                                                    </div>
+                                                    <div class="modal fade" id="discontinuance_cus_{{ Customer.id }}" tabindex="-1" role="dialog" aria-labelledby="discontinuance" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title font-weight-bold">{{ 'admin.customer.resend_confirm_title'|trans }}</h5>
+                                                                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                                                        <span aria-hidden="true">×</span>
+                                                                    </button>
+                                                                </div>
+                                                                <div class="modal-body text-left">
+                                                                    <p class="text-left">{{ 'admin.customer.resend_confirm_message'|trans }}</p>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button class="btn btn-ec-sub" type="button" data-dismiss="modal">{{ 'admin.common.cancel'|trans }}</button>
+                                                                    {# TODO: CSSの変更は別タスクでやります #}
+                                                                    <a class="btn btn-ec-delete" href="{{ url('admin_customer_resend', {'id' : Customer.id}) }}" {{ csrf_token_for_anchor() }} data-method="get" data-confirm="false">
+                                                                        {{ 'admin.common.send'|trans }}
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                                {% if Customer.CustomerBan %}
+                                                    <div class="px-1 d-inline-block" data-tooltip="true" data-placement="top" title="{{ 'customer_ban.admin.unban'|trans }}">
+                                                        <a class="btn btn-ec-actionIcon" data-toggle="modal" data-target="#unban-{{ Customer.id }}">
+                                                            <i class="fa fa-redo fa-lg text-secondary" aria-hidden="true"></i>
+                                                        </a>
+                                                    </div>
+                                                    <div class="modal fade" id="unban-{{ Customer.id }}" tabindex="-1" role="dialog" aria-labelledby="discontinuance" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title font-weight-bold">
+                                                                        {{ 'customer_ban.admin.unban_modal__title'|trans }}</h5>
+                                                                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                                                        <span aria-hidden="true">×</span>
+                                                                    </button>
+                                                                </div>
+                                                                <div class="modal-body text-left">
+                                                                    <p class="text-left">
+                                                                        {{ 'customer_ban.admin.unban_modal__message'|trans({ '%name%' : Customer.email }) }}</p>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button class="btn btn-ec-sub" type="button" data-dismiss="modal">
+                                                                        {{ 'admin.common.cancel'|trans }}
+                                                                    </button>
+                                                                    <a href="{{ url('customer_ban_admin_unban', {'id' : Customer.CustomerBan.id}) }}" class="btn btn-ec-delete"{{ csrf_token_for_anchor() }} data-method="delete" data-confirm="false">
+                                                                        {{ 'customer_ban.admin.unban'|trans }}
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="px-1 d-inline-block" data-tooltip="true" data-placement="top" title="{{ 'customer_ban.admin.ban'|trans }}">
+                                                        <a class="btn btn-ec-actionIcon" data-toggle="modal" data-target="#ban-{{ Customer.id }}">
+                                                            <i class="fa fa-flag fa-lg text-secondary" aria-hidden="true"></i>
+                                                        </a>
+                                                    </div>
+                                                    <div class="modal fade" id="ban-{{ Customer.id }}" tabindex="-1" role="dialog" aria-labelledby="discontinuance" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title font-weight-bold">
+                                                                        {{ 'customer_ban.admin.ban_modal__title'|trans }}</h5>
+                                                                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                                                        <span aria-hidden="true">×</span>
+                                                                    </button>
+                                                                </div>
+                                                                <div class="modal-body text-left">
+                                                                    <p class="text-left">
+                                                                        {{ 'customer_ban.admin.ban_modal__message'|trans({ '%name%' : Customer.email }) }}</p>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button class="btn btn-ec-sub" type="button" data-dismiss="modal">
+                                                                        {{ 'admin.common.cancel'|trans }}
+                                                                    </button>
+                                                                    <a href="{{ url('customer_ban_admin_ban', {'id' : Customer.id}) }}" class="btn btn-ec-delete"{{ csrf_token_for_anchor() }} data-method="delete" data-confirm="false">
+                                                                        {{ 'admin.common.registration'|trans }}
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                                <div class="px-1 d-inline-block" data-tooltip="true" data-placement="top" title="{{ 'admin.common.delete'|trans }}">
+                                                    <a class="btn btn-ec-actionIcon" data-toggle="modal" data-target="#discontinuance-{{ Customer.id }}">
+                                                        <i class="fa fa-close fa-lg text-secondary" aria-hidden="true"></i>
+                                                    </a>
+                                                </div>
+                                                <div class="modal fade" id="discontinuance-{{ Customer.id }}" tabindex="-1" role="dialog" aria-labelledby="discontinuance" aria-hidden="true">
+                                                    <div class="modal-dialog" role="document">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title font-weight-bold">
+                                                                    {{ 'admin.common.delete_modal__title'|trans }}</h5>
+                                                                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                                                    <span aria-hidden="true">×</span>
+                                                                </button>
+                                                            </div>
+                                                            <div class="modal-body text-left">
+                                                                <p class="text-left">
+                                                                    {{ 'admin.common.delete_modal__message'|trans({ '%name%' : Customer.email }) }}</p>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button class="btn btn-ec-sub" type="button" data-dismiss="modal">
+                                                                    {{ 'admin.common.cancel'|trans }}
+                                                                </button>
+                                                                <a href="{{ url('admin_customer_delete', {'id' : Customer.id}) }}" class="btn btn-ec-delete"{{ csrf_token_for_anchor() }} data-method="delete" data-confirm="false">
+                                                                    {{ 'admin.common.delete'|trans }}
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div><!-- /.text-right -->
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% elseif has_errors %}
+                        <div class="card rounded border-0">
+                            <div class="card-body p-4">
+                                <div class="text-center text-muted mb-4 h5">{{ 'admin.common.search_invalid_condition'|trans }}</div>
+                                <div class="text-center text-muted">{{ 'admin.common.search_try_change_condition'|trans }}</div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="card rounded border-0">
+                            <div class="card-body p-4">
+                                <div class="text-center text-muted mb-4 h5">{{ 'admin.common.search_no_result'|trans }}</div>
+                                <div class="text-center text-muted">{{ 'admin.common.search_try_change_condition'|trans }}</div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}

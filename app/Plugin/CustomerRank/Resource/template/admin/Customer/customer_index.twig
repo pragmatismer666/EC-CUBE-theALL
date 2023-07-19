@@ -1,0 +1,48 @@
+{#
+* Plugin Name : CustomerRank
+*
+* Copyright (C) BraTech Co., Ltd. All Rights Reserved.
+* http://www.bratech.co.jp/
+*
+* For the full copyright and license information, please view the LICENSE
+* file that was distributed with this source code.
+#}
+
+<div id="search_customer_rank" style="display:none;">
+    <div class="row mb-2">
+        <div class="col">
+            <div class="form-row">
+                <div class="col-12">
+                <p class="col-form-label">{{ 'customerrank.common.rank'|trans }}</p>
+                {{ form_widget(searchForm.customer_rank, { 'label_attr': { 'class': 'checkbox-inline'}}) }}
+                {{ form_errors(searchForm.customer_rank) }}
+                </div>
+            </div>
+        </div>
+        <div class="col">
+        </div>
+    </div>
+</div>
+
+{% for Customer in pagination %}
+    <div id="c{{ loop.index }}" style="display:none;">
+        {{ Customer.CustomerRank }}
+    </div>
+{% endfor %}
+
+<script>
+    $(function() {
+        $elem = $('#search_customer_rank');
+        $('#searchDetail').prepend($elem.html());
+        $elem.remove();
+        $('table tr').each(function(i) {
+            if (i != 0) {
+                $elem = $('#c' + i);
+                $('td:eq(1)', this).after('<td class="align-middle">'+ $elem.text() +'</td>');
+                $elem.remove();
+            } else {
+                $('th:eq(1)', this).after('<th class="border-top-0 pt-2 pb-3">{{ 'customerrank.common.rank'|trans }}</th>');
+            }
+        });
+    });
+</script>
