@@ -347,6 +347,15 @@ Styleguide 15.1.4
       display: table-cell;
     }
   }
+  & &__shopColumn{
+    display: none;
+    border-bottom: 1px dotted #ee0b0b;
+    text-align: center;
+    width: 16.66666667%;
+    @include media_desktop {
+      display: table-cell;
+    }
+  }
 }
 
 /*
