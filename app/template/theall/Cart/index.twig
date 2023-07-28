@@ -13,7 +13,15 @@ file that was distributed with this source code.
 {% set body_class = 'cart_page' %}
 
 {% set container_class = 'wide' %}
+{% block stylesheet %}
+<style>
 
+.ec-cartRow__shopColumn {
+    text-align: center;
+}
+
+</style>
+{% endblock %}
 {% block main %}
 
     <div class="ec-role">
@@ -122,12 +130,14 @@ file that was distributed with this source code.
                             <ol class="ec-cartHeader">
                                 <li class="ec-cartHeader__label">{{ '削除'|trans }}</li>
                                 <li class="ec-cartHeader__label">{{ '商品内容'|trans }}</li>
+                                <li class="ec-cartHeader__label">{{ 'ショップ'|trans }}</li>
                                 <li class="ec-cartHeader__label">{{ '数量'|trans }}</li>
                                 <li class="ec-cartHeader__label">{{ '小計'|trans }}</li>
                             </ol>
                             {% for CartItem in Cart.CartItems %}
                                 {% set ProductClass = CartItem.ProductClass %}
                                 {% set Product = ProductClass.Product %}
+                                {% set Shop = Product.Shop %}
                                 <ul class="ec-cartRow">
                                     <li class="ec-cartRow__delColumn">
                                         <a href="{{ url('cart_handle_item', {'operation': 'remove', 'productClassId': ProductClass.id }) }}" {{ csrf_token_for_anchor() }} class="ec-icon" data-method="put" data-message="カートから商品を削除してもよろしいですか?">
@@ -153,6 +163,9 @@ file that was distributed with this source code.
                                             <div class="ec-cartRow__unitPrice">{{ CartItem.price|price }}</div>
                                             <div class="ec-cartRow__sutbtotalSP">{{ '小計：'|trans }}{{ CartItem.total_price|price }}</div>
                                         </div>
+                                    </li>
+                                    <li class="ec-cartRow__shopColumn">
+                                        <div class="ec-cartRow__sutbtotal">{{ Shop.name|trans }}</div>
                                     </li>
                                     <li class="ec-cartRow__amountColumn">
                                         <div class="ec-cartRow__amount">{{ CartItem.quantity|number_format }}</div>
