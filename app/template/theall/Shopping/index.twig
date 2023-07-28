@@ -307,7 +307,8 @@ file that was distributed with this source code.
                                                 {% if orderItem.productClass is not null and orderItem.productClass.classCategory2 %}
                                                     <p>{{ orderItem.productClass.classCategory2.className.name }}：{{ orderItem.productClass.classCategory2 }}</p>
                                                 {% endif %}
-                                                <p>{{ orderItem.priceIncTax|price }} × {{ orderItem.quantity|number_format }}<span>{{ '小計：'|trans }}{{ orderItem.totalPrice|price }}</span></p>
+                                                <p>{{ orderItem.priceIncTax|price }} × {{ orderItem.quantity|number_format }}<span>{{ '小計：'|trans }}{{ orderItem.totalPrice|price }} </span></p>
+                                                {% if orderItem.productClass is not null and orderItem.productClass.Product %}<p>{{orderItem.productClass.Product.Shop.name | trans}}</p>{%endif%}
                                             </div>
                                         </div>
                                     </li>

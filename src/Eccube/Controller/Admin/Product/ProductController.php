@@ -943,20 +943,25 @@ class ProductController extends AbstractController
 
                 /** @var $Product \Eccube\Entity\Product */
                 $Product = $entity;
-
+                
                 /** @var $ProductClasses \Eccube\Entity\ProductClass[] */
                 $ProductClasses = $Product->getProductClasses();
 
                 foreach ($ProductClasses as $ProductClass) {
                     $ExportCsvRow = new ExportCsvRow();
-
+                    
                     // CSV出力項目と合致するデータを取得.
                     foreach ($Csvs as $Csv) {
                         // 商品データを検索.
-                        $ExportCsvRow->setData($csvService->getData($Csv, $Product));
-                        if ($ExportCsvRow->isDataNull()) {
-                            // 商品規格情報を検索.
-                            $ExportCsvRow->setData($csvService->getData($Csv, $ProductClass));
+                        if($Csv->getFieldName() === "shop_name"){
+                            $ExportCsvRow->setData($Product->getShop()->getName());
+                        }else{
+
+                            $ExportCsvRow->setData($csvService->getData($Csv, $Product));
+                            if ($ExportCsvRow->isDataNull()) {
+                                // 商品規格情報を検索.
+                                $ExportCsvRow->setData($csvService->getData($Csv, $ProductClass));
+                            }
                         }
 
                         $event = new EventArgs(

@@ -420,6 +420,7 @@ class OrderController extends AbstractController
                     foreach ($Csvs as $Csv) {
                         // 受注データを検索.
                         $ExportCsvRow->setData($csvService->getData($Csv, $Order));
+                        
                         if ($ExportCsvRow->isDataNull()) {
                             // 受注データにない場合は, 受注明細を検索.
                             $ExportCsvRow->setData($csvService->getData($Csv, $OrderItem));

@@ -44,6 +44,10 @@ file that was distributed with this source code.
                                             <dd>{{ Order.CustomerOrderStatus }}</dd>
                                         </dl>
                                     {% endif %}
+                                    <dl class="ec-definitions">
+                                        <dt>{{ 'ショップ'|trans }}</dt>
+                                        <dd>{{ Order.Shop.name }}</dd>
+                                    </dl>
                                     <p class="ec-historyListHeader__action"><a class="ec-inlineBtn"
                                                                                href="{{ url('mypage_history', {'order_no': Order.order_no}) }}">{{ '詳細を見る'|trans }}</a>
                                     </p>
